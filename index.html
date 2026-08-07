@@ -366,7 +366,7 @@ const {
   GAME_TIME, SEG_H, ROAD_W, LANE_XS, LANE_W, ROW_GAP,
   SPEED_LEVELS, OBS_MAP,
   CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
-  SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT,
+  SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT, RECOVER_DUR, HIT_DEPTH_MIN,
   BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, BOOST_PASS, N_BOOST,
   ITEM_W, ITEM_H,
   BASE_DIST, BOOST_RESERVE,
@@ -394,6 +394,7 @@ function renderParams(){
  <div class="param"><label>Lateral V</label><div class="val">${LATERAL_V} m/s</div></div>
  <div class="param"><label>Lane time</label><div class="val">${(LANE_W/LATERAL_V).toFixed(2)}s</div></div>
  <div class="param"><label>Collide</label><div class="val">${COLLIDE_DUR}s ${COLLIDE_MULT}×</div></div>
+ <div class="param"><label>Hồi phục</label><div class="val">${RECOVER_DUR}s ramp</div></div>
  <div class="param"><label>Slip</label><div class="val">${SLIP_DUR}s</div></div>
  <div class="param"><label>Boost</label><div class="val">${BOOST_DUR}s ${BOOST_MULT}×</div></div>
  <div class="param"><label>Boost xuyên</label><div class="val">${BOOST_PASS} vật cản</div></div>
@@ -582,6 +583,7 @@ function buildGame(){
     /* boostPass = số lần xuyên vật cản CÒN LẠI của effect đang chạy.
        Hết lượt thì lần va chạm tiếp theo huỷ effect. */
     boostPass:0,
+    recover:0,                               // thời gian hồi phục còn lại sau va chạm
     free:false,target:null,
     ent:MAP.segs.flatMap(s=>s.obstacles.map(o=>({
       t:o.t,id:o.id,x:o.x,y:s.dist+SEG_H/2+o.y,dead:false})))};
@@ -644,6 +646,12 @@ function syncControls(){
 function curSpeed(){
  let v=speedAt(G.t);
  if(G.state==='collided')v*=COLLIDE_MULT;
+ /* Hồi phục dần: hết state 'collided' thì tốc độ bò từ COLLIDE_MULT về 1.0 trong
+    RECOVER_DUR giây, thay vì nhảy thẳng. Cảm giác "lấy lại đà" chứ không bị giật. */
+ else if(G.recover>0){
+  const k=1-G.recover/RECOVER_DUR;           // 0 lúc vừa hết phạt → 1 lúc hồi xong
+  v*=COLLIDE_MULT+(1-COLLIDE_MULT)*k;
+ }
  if(G.boost>0)v*=BOOST_MULT;
  return v;
 }
@@ -765,7 +773,15 @@ function step(dt){
  if(G.t>=GAME_TIME){if(SESSION==='running'){SESSION='over';syncControls()}return}
  G.t=Math.min(GAME_TIME,G.t+dt);
  if(G.t>=GAME_TIME){SESSION='over';syncControls()}
- if(G.state!=='moving'){G.stTimer-=dt;if(G.stTimer<=0){G.state='moving';G.slipDir=0}}
+ if(G.state!=='moving'){
+  const wasCollided=G.state==='collided';
+  G.stTimer-=dt;
+  if(G.stTimer<=0){
+   G.state='moving';G.slipDir=0;
+   // hết phạt va chạm thì vào giai đoạn hồi phục, không nhảy thẳng về tốc độ cũ
+   if(wasCollided)G.recover=RECOVER_DUR;
+  }
+ } else G.recover=Math.max(0,G.recover-dt);
  G.boost=Math.max(0,G.boost-dt);
  if(G.boost===0)G.boostPass=0;                 // hết thời gian thì hết cả lượt xuyên
  const v=curSpeed();
@@ -786,27 +802,52 @@ function step(dt){
   G.x=Math.max(-CAR_LIMIT_X,Math.min(CAR_LIMIT_X,G.x));
   if(G.free)G.lane=nearestLane(G.x);           // giữ lane khớp để logic khác dùng
  }
+ /* --- Phát hiện va chạm ---------------------------------------------------
+    Gom các vật cản đang overlap theo HÀNG (cùng world y) rồi mới đếm, vì hai
+    vật cản ở hai làn kề chỉ cách 3.5m trong khi nửa tổng bề rộng xe+fence là
+    3.0m — xe nằm khoảng giữa sẽ overlap cả hai. Vòng lặp cũ tính 2 hit cho một
+    lần đâm. Luật đếm: trong mỗi hàng, cái xuyên SÂU NHẤT luôn tính, cái còn lại
+    chỉ tính thêm nếu xuyên ≥ HIT_DEPTH_MIN (nằm hẳn lên, không phải sượt mép). */
+ const touch=[];
  for(const o of G.ent){
   if(o.dead)continue;
   const dy=o.y-G.dist;
   if(dy<-6||dy>30)continue;
   const cfg=(o.t==='booster'||o.t==='gift')?{w:ITEM_W,h:ITEM_H}:OBS_MAP[o.id];
-  if(Math.abs(G.x-o.x)<(CAR_W+cfg.w)/2&&Math.abs(dy)<(CAR_H+cfg.h)/2){
-   o.dead=true;
+  const depth=(CAR_W+cfg.w)/2-Math.abs(G.x-o.x);        // >0 là overlap theo X
+  if(depth>0&&Math.abs(dy)<(CAR_H+cfg.h)/2)touch.push({o,depth});
+ }
+ if(touch.length){
+  /* Item ăn hết, không qua luật đếm hàng */
+  touch.filter(h=>h.o.t==='booster'||h.o.t==='gift').forEach(h=>{
+   const o=h.o; o.dead=true;
    if(o.t==='booster'){
     G.boost=BOOST_DUR;G.boostPass=BOOST_PASS;G.boosts++;G.score+=BOOST_SCORE;
-    pop('⚡ BOOST '+BOOST_DUR+'s · '+BOOST_PASS+' lần xuyên','#8B9EFF');continue}
-   if(o.t==='gift'){G.gift=true;G.score+=GIFT_SCORE;pop('🎁 +'+GIFT_SCORE,'#E8A0C8');continue}
-   /* Booster: xuyên được BOOST_PASS vật cản đầu. Từ cái thứ BOOST_PASS+1 trở đi,
-      va vào là MẤT effect và ăn đủ hình phạt (rơi xuống nhánh xử lý va chạm dưới). */
-   if(G.boost>0&&G.boostPass>0){
-    G.boostPass--;G.score+=80;
-    pop('+80 · còn '+G.boostPass+' lần xuyên','#8B9EFF');continue}
-   if(G.boost>0){G.boost=0;G.boostPass=0;pop('⚡ mất boost','#C0392B')}
-   G.hits++;
-   if(o.id==='oil'){G.state='slipping';G.stTimer=SLIP_DUR;G.slipDir=G.x<0?1:-1;pop('💧 mất lái','#6D5BA6')}
-   else{G.state='collided';G.stTimer=COLLIDE_DUR;pop('💥 '+COLLIDE_DUR+'s '+COLLIDE_MULT+'×','#C0392B')}
-  }
+    pop('⚡ BOOST '+BOOST_DUR+'s · '+BOOST_PASS+' lần xuyên','#8B9EFF')}
+   else{G.gift=true;G.score+=GIFT_SCORE;pop('🎁 +'+GIFT_SCORE,'#E8A0C8')}
+  });
+  /* Vật cản: nhóm theo world y, mỗi nhóm quyết định số hit riêng */
+  const byRow=new Map();
+  touch.filter(h=>h.o.t!=='booster'&&h.o.t!=='gift').forEach(h=>{
+   if(!byRow.has(h.o.y))byRow.set(h.o.y,[]);
+   byRow.get(h.o.y).push(h);
+  });
+  Array.from(byRow.keys()).sort((a,b)=>a-b).forEach(y=>{
+   const row=byRow.get(y).sort((a,b)=>b.depth-a.depth);
+   row.forEach((h,i)=>{
+    const o=h.o;
+    o.dead=true;                                       // đã xử lý, không xét lại
+    // sượt mép cái thứ hai trở đi thì bỏ qua hoàn toàn
+    if(i>0&&h.depth<HIT_DEPTH_MIN)return;
+    if(G.boost>0&&G.boostPass>0){
+     G.boostPass--;G.score+=80;
+     pop('+80 · còn '+G.boostPass+' lần xuyên','#8B9EFF');return}
+    if(G.boost>0){G.boost=0;G.boostPass=0;pop('⚡ mất boost','#C0392B')}
+    G.hits++;
+    if(o.id==='oil'){G.state='slipping';G.stTimer=SLIP_DUR;G.slipDir=G.x<0?1:-1;G.recover=0;pop('💧 mất lái','#6D5BA6')}
+    else{G.state='collided';G.stTimer=COLLIDE_DUR;G.recover=0;pop('💥 '+COLLIDE_DUR+'s '+COLLIDE_MULT+'×','#C0392B')}
+   });
+  });
  }
 }
 function draw(){

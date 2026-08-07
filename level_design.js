@@ -57,7 +57,36 @@
               Cho slack ~0.11s (7 frame) ở chỗ chặt nhất. */
   const REACT_MARGIN = 1.4;
 
-  const SLIP_DUR = 1.0, COLLIDE_DUR = 2.5, COLLIDE_MULT = 0.25;
+  const SLIP_DUR = 1.0;
+  /* Hình phạt va chạm. Cũ là 2.5s ở 0.25× — quá lâu: ở 40 m/s mất 75m, và 2.5 giây
+     bò ở 1/4 tốc độ khiến người chơi cảm giác mất kiểm soát chứ không phải bị phạt.
+       cũ: 2.5 × (1 − 0.25) = 1.875 "giây-tốc-độ" bị mất
+       mới: 1.2 × (1 − 0.45) = 0.66, cộng ramp 0.8 × (1 − 0.725) ≈ 0.22 ⇒ 0.88
+     Tức hình phạt giảm ~53% nhưng vẫn đau. PHẢI khớp với app.ts + init_data.json,
+     nếu không anti-cheat sẽ báo distance vượt allowedMaxDistance. */
+  const COLLIDE_DUR = 1.2, COLLIDE_MULT = 0.45;
+  /* Hồi phục dần sau va chạm thay vì nhảy thẳng về 100% tốc độ.
+     Server không mô phỏng ramp này, nhưng ramp làm client CHẬM hơn server nên
+     distance luôn nằm dưới cận trên — an toàn với anti-cheat. */
+  const RECOVER_DUR = 0.8;
+  /* Đếm va chạm khi NHIỀU vật cản cùng hàng chạm trong một frame.
+     Hình học collider KHÔNG đổi (phải khớp app.ts/Unity tuyệt đối), chỉ đổi cách đếm.
+
+     Vấn đề: hai vật cản ở hai làn kề chỉ cách 3.5m, mà nửa tổng bề rộng xe+fence là
+     (2.49+3.51)/2 = 3.0m. Nên xe nằm ở khoảng giữa hai làn sẽ overlap CẢ HAI, và
+     vòng lặp cũ tính 2 hit dù người chơi chỉ đâm vào một cái.
+
+     Luật mới, trong mỗi hàng (cùng world y):
+       · vật cản xuyên SÂU NHẤT theo trục X luôn tính 1 hit — không bỏ sót va chạm thật
+       · vật cản còn lại chỉ tính thêm nếu độ xuyên ≥ HIT_DEPTH_MIN, tức xe thật sự
+         nằm chồng lên nó chứ không phải sượt mép
+
+     Kiểm chứng bằng số:
+       xe giữa hai FENCE làn kề (x=−1.75): xuyên 1.25m mỗi bên  ⇒ 2 hit (đúng, nằm hẳn lên cả hai)
+       xe giữa hai CONE làn kề (x=−1.75): xuyên 0.45m mỗi bên  ⇒ 1 hit (đúng, chỉ kẹp mép)
+     Ngưỡng tuyệt đối đơn thuần sẽ cho 0 hit ở ca cone — nên phải có luật "sâu nhất
+     luôn tính" đi kèm. */
+  const HIT_DEPTH_MIN = 0.5;
   const BOOST_DUR = 5.0, BOOST_MULT = 1.35, BOOST_SCORE = 150, GIFT_SCORE = 600;
   /* Booster KHÔNG phải bất tử. Nó cho đi xuyên qua đúng BOOST_PASS vật cản đầu
      tiên; từ vật cản thứ BOOST_PASS+1 trở đi, va vào là mất luôn effect và ăn
@@ -652,17 +681,24 @@
        chơi ăn 3 va chạm là không bao giờ tới. Ở đây mô phỏng quãng đường còn lại
        sau HIT_BUDGET va chạm (không tính boost) và yêu cầu item nằm trong đó. */
     const reachAfterHits = (nHit) => {
-      let t = 0, d = 0, slow = 0;
+      let t = 0, d = 0, slow = 0, rec = 0;
       const dt = 1 / 60;
       const hitTimes = [];
       for (let i = 0; i < nHit; i++) hitTimes.push(12 + i * (42 / Math.max(1, nHit)));
       let left = nHit;
       while (t < GAME_TIME) {
-        if (left > 0 && t >= hitTimes[nHit - left]) { slow = COLLIDE_DUR; left--; }
+        if (left > 0 && t >= hitTimes[nHit - left]) { slow = COLLIDE_DUR; rec = 0; left--; }
         let v = speedAt(t);
-        if (slow > 0) v *= COLLIDE_MULT;
+        if (slow > 0) {
+          v *= COLLIDE_MULT;
+          slow = Math.max(0, slow - dt);
+          if (slow === 0) rec = RECOVER_DUR;         // hết phạt -> vào ramp hồi phục
+        } else if (rec > 0) {
+          // cùng công thức ramp với curSpeed() trong index.html
+          v *= COLLIDE_MULT + (1 - COLLIDE_MULT) * (1 - rec / RECOVER_DUR);
+          rec = Math.max(0, rec - dt);
+        }
         d += v * dt; t += dt;
-        slow = Math.max(0, slow - dt);
       }
       return d;
     };
@@ -857,7 +893,7 @@
     GAME_TIME, SEG_H, ROAD_W, LANE_XS, LANE_W, ROW_GAP,
     SPEED_LEVELS, OBS_MAP, NORMAL_POOL,
     CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
-    SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT,
+    SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT, RECOVER_DUR, HIT_DEPTH_MIN,
     BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, BOOST_PASS, N_BOOST, N_GIFT,
     ITEM_W, ITEM_H,
     BASE_DIST, BOOST_RESERVE, NEED_DIST,

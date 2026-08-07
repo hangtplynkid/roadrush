@@ -34,7 +34,16 @@ hỏng vào Unity. Mở `index.html` (không cần server) để xem chỉ số 
 | `index.html` | Bảng chỉ số + chơi thử (dùng chung 2 module trên) |
 | `road_path_patterns.json` | **File Unity đọc** — do exporter ghi ra |
 | `items.json` | Booster/gift theo `distanceY` (sinh bởi `--items`) |
-| `app.ts`, `init_data.json` | Server và config của game, tool không sửa |
+| `app.ts`, `init_data.json` | Server và config của game — chỉ sửa khi buộc phải đồng bộ (xem dưới) |
+
+**Ba giá trị phải khớp tuyệt đối giữa 4 chỗ**: `level_design.js`, `index.html`,
+`app.ts` (`CarStates`), `init_data.json` (`carState`). Đó là `activeDuration` và
+`speedMultiplier` của `collided` và `slipping`. Server dùng chúng để mô phỏng lại
+quãng đường; lệch một chút là anti-cheat đánh `distance > allowedMaxDistance` và trả
+"Xác thực khoảng cách thất bại". Hiện `collided = 1.2s × 0.45`, `slipping = 1.0s`.
+
+Ramp hồi phục 0.8s thì **không** cần đồng bộ: nó làm client chậm hơn server, và server
+chỉ kiểm cận trên.
 
 Hai module dùng chung cho cả browser và node qua UMD, nên web và harness kiểm tra
 luôn cùng một nguồn sự thật. Sinh ra khi chạy, không cần commit:
@@ -76,19 +85,59 @@ tối thiểu **2458m**.
 
 | ID | Loại | Collider | Hiệu ứng |
 |---|---|---|---|
-| `cone` | normal | 1.9 × 2.41 | `collided` 2.5s, tốc độ ×0.25 |
+| `cone` | normal | 1.9 × 2.41 | `collided` 1.2s, tốc độ ×0.45, rồi hồi dần 0.8s |
 | `tire` | normal | 3.3 × 2.57 | như trên |
 | `fence` | normal | 3.51 × 2.64 | như trên |
 | `oil` | oil | 3.28 × 2.33 | `slipping` 1.0s, mất lái |
 
 Giá va chạm tính theo mét bị mất:
 
-| Tốc độ | Mất |
-|---|---|
-| 20 m/s | 38m |
-| 30 m/s | 56m |
-| 40 m/s | 75m |
-| 50 m/s | 94m |
+| Tốc độ | Mất | (luật cũ 2.5s × 0.25) |
+|---|---|---|
+| 20 m/s | 18m | 38m |
+| 30 m/s | 26m | 56m |
+| 40 m/s | 35m | 75m |
+| 50 m/s | 44m | 94m |
+
+Hình phạt cũ `2.5s × 0.25` quá lâu: ở 40 m/s mất 75m, và hai giây rưỡi bò ở một phần
+tư tốc độ khiến người chơi cảm giác mất kiểm soát chứ không phải bị phạt. Tính bằng
+"giây-tốc-độ" bị mất: cũ `2.5 × (1 − 0.25) = 1.875`, mới `1.2 × (1 − 0.45) = 0.66`
+cộng ramp `≈ 0.22` ⇒ `0.88`. Giảm 53% nhưng vẫn là hình phạt thật.
+
+### Hồi phục dần sau va chạm
+
+Hết `collided`, tốc độ **không** nhảy thẳng về 100% mà bò từ `0.45×` lên `1.0×` trong
+`RECOVER_DUR = 0.8s`:
+
+```js
+v *= COLLIDE_MULT + (1 - COLLIDE_MULT) * (1 - recover/RECOVER_DUR)
+```
+
+Cảm giác "lấy lại đà" thay vì bị giật một nhịp. Server **không** mô phỏng ramp này,
+nhưng ramp chỉ làm client chậm hơn server nên `distance` vẫn nằm dưới
+`allowedMaxDistance` — an toàn với anti-cheat, không cần sửa `app.ts` cho phần này.
+
+### Đếm va chạm khi nhiều vật cản cùng hàng
+
+Hai vật cản ở hai làn kề chỉ cách 3.5m, mà nửa tổng bề rộng xe + fence là
+`(2.49 + 3.51)/2 = 3.0m`. Nên xe nằm ở khoảng giữa hai làn sẽ overlap **cả hai**, và
+cách đếm cũ tính 2 va chạm dù người chơi chỉ đâm vào một cái.
+
+Hình học collider không đổi — nó phải khớp `app.ts` và Unity tuyệt đối. Chỉ cách
+**đếm** đổi. Trong mỗi hàng (cùng world Y):
+
+- vật cản xuyên **sâu nhất** theo trục X luôn tính 1 va chạm, không bỏ sót
+- vật cản còn lại chỉ tính thêm nếu độ xuyên `≥ HIT_DEPTH_MIN = 0.5m`
+
+| Tình huống | Độ xuyên | Cũ | Mới |
+|---|---|---|---|
+| Hai `fence` làn kề, xe ở giữa | 1.25m mỗi bên | 2 | **2** (nằm hẳn lên cả hai) |
+| Hai `cone` làn kề, xe ở giữa | 0.45m mỗi bên | 2 | **1** (chỉ kẹp mép) |
+| Đâm giữa một `fence`, có `fence` làn kề | 3.0m / không chạm | 1 | 1 |
+| Hai vật cản khác hàng (cách 16m) | — | 2 | 2 |
+
+Ngưỡng tuyệt đối đơn thuần sẽ cho **0** va chạm ở ca hai `cone` — xe xuyên qua cả
+hai. Nên luật "sâu nhất luôn tính" là phần bắt buộc đi kèm, không phải tuỳ chọn.
 
 ### Item (mở rộng, không có trong schema Unity)
 
@@ -166,7 +215,7 @@ Tổng 80 segment = 2560m, dư so với 2458m cần thiết. Cả 27 tổ hợp 
 
 Gift đặt ở **giữa P2** (50% của phase). Trước đây nó ở cuối P3 (~2150m = 93% quãng
 đường) nên chỉ 3 va chạm là không tới nổi, hầu như không ai thấy. Ở giữa P2 còn hơn
-1600m dư địa, chịu được tới 30 va chạm.
+1600m dư địa, chịu được rất nhiều va chạm.
 
 ### DSL soạn map
 
@@ -365,7 +414,7 @@ Booster **không** cho bay qua mọi thứ trong 5 giây. Nó cấp:
 - **2 lượt xuyên** (`BOOST_PASS`): xuyên qua 2 vật cản đầu tiên, mỗi lần +80 điểm
 
 Từ vật cản **thứ 3** trở đi, va vào là **mất luôn effect** và ăn đủ hình phạt như
-bình thường — `collided` 2.5s ở 0.25× tốc độ, hoặc `slipping` nếu là oil. Lượt xuyên
+bình thường — `collided` 1.2s ở 0.45× tốc độ, hoặc `slipping` nếu là oil. Lượt xuyên
 không để dành được: hết 5 giây là mất, dù chưa dùng. Ăn booster thứ hai thì nạp lại
 đủ 2 lượt.
 

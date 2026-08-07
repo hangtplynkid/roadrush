@@ -568,8 +568,8 @@
         },
         {
           "stateId": "collided",
-          "activeDuration": 2.5,
-          "speedMultiplier": 0.25
+          "activeDuration": 1.2,
+          "speedMultiplier": 0.45
         }
       ]
     }
