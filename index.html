@@ -367,7 +367,7 @@ const {
   SPEED_LEVELS, OBS_MAP,
   CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
   SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT,
-  BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, N_BOOST,
+  BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, BOOST_PASS, N_BOOST,
   ITEM_W, ITEM_H,
   BASE_DIST, BOOST_RESERVE,
   speedAt, distAtTime, timeAtDist,
@@ -396,6 +396,7 @@ function renderParams(){
  <div class="param"><label>Collide</label><div class="val">${COLLIDE_DUR}s ${COLLIDE_MULT}×</div></div>
  <div class="param"><label>Slip</label><div class="val">${SLIP_DUR}s</div></div>
  <div class="param"><label>Boost</label><div class="val">${BOOST_DUR}s ${BOOST_MULT}×</div></div>
+ <div class="param"><label>Boost xuyên</label><div class="val">${BOOST_PASS} vật cản</div></div>
  <div class="param"><label>Boost pts</label><div class="val">+${BOOST_SCORE}</div></div>
  <div class="param"><label>Gift pts</label><div class="val">+${GIFT_SCORE}</div></div>
  <div class="param"><label>Combos</label><div class="val">3³ = 27</div></div>
@@ -578,6 +579,9 @@ let drag=null;                      // trạng thái kéo chuột/ngón tay (xem
 function buildGame(){
  G={t:0,dist:0,x:0,lane:1,score:0,hits:0,boosts:0,gift:false,
     state:'moving',stTimer:0,boost:0,slipDir:0,pops:[],
+    /* boostPass = số lần xuyên vật cản CÒN LẠI của effect đang chạy.
+       Hết lượt thì lần va chạm tiếp theo huỷ effect. */
+    boostPass:0,
     free:false,target:null,
     ent:MAP.segs.flatMap(s=>s.obstacles.map(o=>({
       t:o.t,id:o.id,x:o.x,y:s.dist+SEG_H/2+o.y,dead:false})))};
@@ -763,6 +767,7 @@ function step(dt){
  if(G.t>=GAME_TIME){SESSION='over';syncControls()}
  if(G.state!=='moving'){G.stTimer-=dt;if(G.stTimer<=0){G.state='moving';G.slipDir=0}}
  G.boost=Math.max(0,G.boost-dt);
+ if(G.boost===0)G.boostPass=0;                 // hết thời gian thì hết cả lượt xuyên
  const v=curSpeed();
  G.dist+=v*dt;
  G.score+=v*dt*(G.boost>0?2:1);
@@ -788,9 +793,16 @@ function step(dt){
   const cfg=(o.t==='booster'||o.t==='gift')?{w:ITEM_W,h:ITEM_H}:OBS_MAP[o.id];
   if(Math.abs(G.x-o.x)<(CAR_W+cfg.w)/2&&Math.abs(dy)<(CAR_H+cfg.h)/2){
    o.dead=true;
-   if(o.t==='booster'){G.boost=BOOST_DUR;G.boosts++;G.score+=BOOST_SCORE;pop('⚡ BOOST '+BOOST_DUR+'s','#8B9EFF');continue}
+   if(o.t==='booster'){
+    G.boost=BOOST_DUR;G.boostPass=BOOST_PASS;G.boosts++;G.score+=BOOST_SCORE;
+    pop('⚡ BOOST '+BOOST_DUR+'s · '+BOOST_PASS+' lần xuyên','#8B9EFF');continue}
    if(o.t==='gift'){G.gift=true;G.score+=GIFT_SCORE;pop('🎁 +'+GIFT_SCORE,'#E8A0C8');continue}
-   if(G.boost>0){G.score+=80;pop('+80','#8B9EFF');continue}
+   /* Booster: xuyên được BOOST_PASS vật cản đầu. Từ cái thứ BOOST_PASS+1 trở đi,
+      va vào là MẤT effect và ăn đủ hình phạt (rơi xuống nhánh xử lý va chạm dưới). */
+   if(G.boost>0&&G.boostPass>0){
+    G.boostPass--;G.score+=80;
+    pop('+80 · còn '+G.boostPass+' lần xuyên','#8B9EFF');continue}
+   if(G.boost>0){G.boost=0;G.boostPass=0;pop('⚡ mất boost','#C0392B')}
    G.hits++;
    if(o.id==='oil'){G.state='slipping';G.stTimer=SLIP_DUR;G.slipDir=G.x<0?1:-1;pop('💧 mất lái','#6D5BA6')}
    else{G.state='collided';G.stTimer=COLLIDE_DUR;pop('💥 '+COLLIDE_DUR+'s '+COLLIDE_MULT+'×','#C0392B')}
@@ -855,8 +867,22 @@ function draw(){
  ctx.fillText(Math.round(G.score),16,34);
  ctx.font='500 10px Be Vietnam Pro';
  ctx.fillText(`${Math.round(G.dist)}m · ${(GAME_TIME-G.t).toFixed(1)}s · ${G.state}`,16,48);
- if(G.boost>0){ctx.fillStyle='#8B9EFF';ctx.textAlign='right';ctx.font='600 14px Fredoka';
-  ctx.fillText('⚡'+G.boost.toFixed(1)+'s',CW-14,32)}
+ if(G.boost>0){
+  ctx.textAlign='right';
+  ctx.fillStyle='#8B9EFF';ctx.font='600 14px Fredoka';
+  ctx.fillText('⚡'+G.boost.toFixed(1)+'s',CW-14,32);
+  /* Lượt xuyên còn lại: chấm đầy = còn dùng được, chấm rỗng = đã tiêu.
+     Người chơi cần thấy ngay mình còn mấy lần trước khi lao vào vật cản. */
+  for(let i=0;i<BOOST_PASS;i++){
+   const bx=CW-20-i*15, by=48, on=i<G.boostPass;
+   ctx.beginPath();ctx.arc(bx,by,5,0,7);
+   ctx.fillStyle=on?'#8B9EFF':'rgba(139,158,255,.22)';ctx.fill();
+   if(!on){ctx.strokeStyle='rgba(139,158,255,.55)';ctx.lineWidth=1.2;ctx.stroke()}
+  }
+  if(G.boostPass===0){
+   ctx.fillStyle='#C0392B';ctx.font='600 10px Be Vietnam Pro';
+   ctx.fillText('hết lượt xuyên',CW-14,68)}
+ }
 
  document.getElementById('hScore').textContent=Math.round(G.score);
  document.getElementById('hDist').textContent=Math.round(G.dist)+'m';

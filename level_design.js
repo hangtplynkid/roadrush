@@ -59,6 +59,12 @@
 
   const SLIP_DUR = 1.0, COLLIDE_DUR = 2.5, COLLIDE_MULT = 0.25;
   const BOOST_DUR = 5.0, BOOST_MULT = 1.35, BOOST_SCORE = 150, GIFT_SCORE = 600;
+  /* Booster KHÔNG phải bất tử. Nó cho đi xuyên qua đúng BOOST_PASS vật cản đầu
+     tiên; từ vật cản thứ BOOST_PASS+1 trở đi, va vào là mất luôn effect và ăn
+     đủ hình phạt va chạm như bình thường. Lý do: bất tử 5s ở P3 là bỏ qua gần
+     như toàn bộ đoạn khó nhất, làm hai booster thành nút "thắng" chứ không phải
+     phần thưởng. Giới hạn số lần xuyên biến nó thành tài nguyên phải tiêu dè. */
+  const BOOST_PASS = 2;
   const N_BOOST = 2, N_GIFT = 1;
   const ITEM_W = 2.6, ITEM_H = 2.6;
 
@@ -675,6 +681,37 @@
     const budget = N_BOOST * BOOST_DUR / GAME_TIME;
     out.push([budget <= 0.20, 'Ngân sách boost ≤ 20%', Math.round(budget * 100) + '%']);
 
+    /* 16. Cửa sổ boost phải né được ở tốc độ ĐÃ NHÂN BOOST_MULT.
+       Luật này chỉ có nghĩa từ khi booster thôi là bất tử: nó chỉ cho xuyên
+       BOOST_PASS vật cản, nên 5 giây boost là 5 giây người chơi vẫn phải lái.
+       Mà boost làm v ×1.35 ⇒ 16m ở cuối map chỉ còn 16/(50×1.35) = 0.237s, ÍT HƠN
+       0.25s cần để đổi 1 làn. Nếu cửa sổ boost chứa một hàng như vậy thì người
+       chơi buộc phải tiêu lượt xuyên dù lái đúng — biến phần thưởng thành cái bẫy. */
+    const boostBad = [];
+    items.filter(x => x.type === 'booster').forEach(b => {
+      // quãng đường đi được trong BOOST_DUR giây kể từ lúc ăn booster
+      let t = b.time, d = b.dist;
+      const dt = 1 / 240;
+      while (t < b.time + BOOST_DUR && t < GAME_TIME) {
+        d += speedAt(t) * BOOST_MULT * dt; t += dt;
+      }
+      for (let i = 1; i < rows.length; i++) {
+        const cur = rows[i];
+        if (cur.y <= b.dist) continue;
+        if (cur.y > d) break;
+        if (!cur.lanes.length) continue;
+        const prev = rows[i - 1];
+        const avail = (cur.y - prev.y) / (speedAt(cur.time) * BOOST_MULT);
+        const hop = minHop(openLanes(prev), openLanes(cur));
+        if (hop * LANE_TIME > avail + 0.02) {
+          boostBad.push('@' + (cur.y | 0) + ' cần ' + (hop * LANE_TIME).toFixed(2) +
+            's > ' + avail.toFixed(2) + 's');
+        }
+      }
+    });
+    out.push([!boostBad.length, 'Cửa sổ boost né được ở ' + BOOST_MULT + '× tốc độ',
+      boostBad.length ? boostBad.slice(0, 3).join(' · ') : 'OK']);
+
     return out;
   }
 
@@ -821,7 +858,7 @@
     SPEED_LEVELS, OBS_MAP, NORMAL_POOL,
     CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
     SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT,
-    BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, N_BOOST, N_GIFT,
+    BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, BOOST_PASS, N_BOOST, N_GIFT,
     ITEM_W, ITEM_H,
     BASE_DIST, BOOST_RESERVE, NEED_DIST,
     speedAt, distAtTime, timeAtDist,

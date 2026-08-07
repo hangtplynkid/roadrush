@@ -94,7 +94,7 @@ Giá va chạm tính theo mét bị mất:
 
 | Item | Số lượng | Điểm | Hiệu ứng |
 |---|---|---|---|
-| Booster | 2 | +150 | tốc độ ×1.35 trong 5s |
+| Booster | 2 | +150 | tốc độ ×1.35 trong 5s + xuyên **2** vật cản |
 | Gift | 1 | +600 | — |
 
 Collider item 2.6 × 2.6. Ngân sách boost 2 × 5s / 60s = 17% thời lượng.
@@ -221,7 +221,7 @@ phải tự nhớ dùng nó ở nửa sau P3 — dễ sai và đã sai.
 
 ---
 
-## Validator (16 rule)
+## Validator (17 rule)
 
 Chạy trên mọi tổ hợp, tất cả tính bằng mét và giây thật.
 
@@ -243,6 +243,7 @@ Chạy trên mọi tổ hợp, tất cả tính bằng mét và giây thật.
 | 14 | **Item nằm trong tầm với sau 5 va chạm** |
 | 15 | Map phủ 60s + dự phòng boost |
 | 16 | Ngân sách boost ≤ 20% |
+| 17 | **Cửa sổ boost né được ở 1.35× tốc độ** |
 
 Rule 14 sinh ra từ một lỗi thật: 15 rule đầu đều đạt mà quà vẫn không ai thấy được,
 vì rule 6 chỉ kiểm hình học (*có kịp đổi làn tới quà không*) mà không hỏi câu quan
@@ -355,6 +356,35 @@ Schema `roadPathPatternInfos` của Unity không có chỗ cho item, nên
 `x` (làn) cho cả 27 tổ hợp. Spawn bằng hệ thống riêng.
 
 Công thức: `worldY = segment × 32 + 16 + localY`.
+
+### Cơ chế booster: 2 lượt xuyên, không bất tử
+
+Booster **không** cho bay qua mọi thứ trong 5 giây. Nó cấp:
+
+- tốc độ ×1.35 trong 5 giây
+- **2 lượt xuyên** (`BOOST_PASS`): xuyên qua 2 vật cản đầu tiên, mỗi lần +80 điểm
+
+Từ vật cản **thứ 3** trở đi, va vào là **mất luôn effect** và ăn đủ hình phạt như
+bình thường — `collided` 2.5s ở 0.25× tốc độ, hoặc `slipping` nếu là oil. Lượt xuyên
+không để dành được: hết 5 giây là mất, dù chưa dùng. Ăn booster thứ hai thì nạp lại
+đủ 2 lượt.
+
+Lý do đổi: bất tử 5 giây ở P3 là bỏ qua gần như toàn bộ đoạn khó nhất, làm hai
+booster thành nút "thắng" chứ không phải phần thưởng. Giới hạn số lần xuyên biến nó
+thành tài nguyên phải tiêu dè — người chơi vẫn phải lái trong lúc boost.
+
+HUD hiện `⚡` kèm thời gian còn lại và hai chấm: chấm đầy = lượt còn dùng được, chấm
+rỗng = đã tiêu. Hết lượt thì báo "hết lượt xuyên" màu đỏ.
+
+Đây là cơ chế **chỉ có ở client** — `app.ts` không mô hình hoá booster, `CarStates`
+chỉ có `moving` / `slipping` / `collided`.
+
+**Ràng buộc kéo theo (rule 17).** Boost làm v ×1.35, nên hàng cách 16m ở cuối map chỉ
+còn `16 / (50 × 1.35) = 0.237s` — **ít hơn** 0.25s cần để đổi một làn. Khi booster
+còn là bất tử thì điều đó vô hại. Giờ thì không: nếu cửa sổ 5 giây boost chứa một
+hàng như vậy, người chơi buộc phải tiêu lượt xuyên dù lái đúng, và phần thưởng thành
+cái bẫy. Rule 17 mô phỏng quãng đường đi được trong 5 giây kể từ mỗi booster và kiểm
+mọi hàng trong đó ở tốc độ đã nhân boost. Hiện 27/27 tổ hợp sạch.
 
 ---
 
