@@ -48,6 +48,7 @@
 
   const CAR_W = 2.49, CAR_H = 3.965;
   const LATERAL_V = 14;                        // m/s dịch ngang
+  const CAR_LIMIT_X = 5.25;                    // biên đường (app.ts CarLimitX)
   const LANE_TIME = LANE_W / LATERAL_V;        // 0.25s
   const REACT_MARGIN = 1.15;                   // hệ số an toàn cho hàng gần nhất
 
@@ -746,7 +747,7 @@
   return {
     GAME_TIME, SEG_H, ROAD_W, LANE_XS, LANE_W, ROW_GAP,
     SPEED_LEVELS, OBS_MAP, NORMAL_POOL,
-    CAR_W, CAR_H, LATERAL_V, LANE_TIME,
+    CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
     SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT,
     BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, N_BOOST, N_GIFT,
     ITEM_W, ITEM_H,

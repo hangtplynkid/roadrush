@@ -18,11 +18,17 @@ Mở `index.html` để xem toàn bộ chỉ số và chơi thử. Panel **Unity
 
 Phím trong phần chơi thử:
 
-| Phím | Việc |
+| Thao tác | Việc |
 |---|---|
-| `←` `→` hoặc `A` `D` | đổi làn |
+| **Kéo** chuột hoặc ngón tay | lái tự do, xe đi theo con trỏ |
+| **Chạm nhanh** nửa trái/phải | đổi 1 làn |
+| `←` `→` hoặc `A` `D` | đổi 1 làn |
 | `Space` | Play khi chưa chạy · Pause/Resume khi đang chạy · Chơi lại khi hết giờ |
 | `P` hoặc `Esc` | Pause / Resume |
+
+Khi kéo, xe vẫn bị giới hạn tốc độ ngang `LATERAL_V = 14 m/s` và biên đường
+`CarLimitX = ±5.25m` đúng như Unity, nên không thể lách qua vật cản nhanh hơn
+mức mà validator dùng để kiểm map. Nhả tay thì xe tự về tâm làn gần nhất.
 
 Bấm tiếp tục sau khi pause sẽ đếm ngược 3 giây để kịp nhìn lại map. Đồng hồ game
 không chạy trong lúc đếm ngược. Đổi biến thể A/B/C sẽ dựng map mới và về trạng

@@ -327,7 +327,8 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
     <div><span>Hits</span><b id="hHits">0</b></div>
   </div>
   <div id="itemTrack" class="itrack"></div>
-  <div class="hint">← → hoặc A / D đổi làn · <b>Space</b> play/pause · <b>P</b> hoặc <b>Esc</b> pause</div>
+  <div class="hint"><b>Kéo</b> chuột/ngón tay để lái · chạm nhanh đổi 1 làn · <b>← →</b> hoặc <b>A D</b><br>
+  <b>Space</b> play/pause · <b>P</b> hoặc <b>Esc</b> pause</div>
 </div>
 </div>
 </div>
@@ -340,7 +341,7 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
 const {
   GAME_TIME, SEG_H, ROAD_W, LANE_XS, LANE_W, ROW_GAP,
   SPEED_LEVELS, OBS_MAP,
-  CAR_W, CAR_H, LATERAL_V, LANE_TIME,
+  CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
   SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT,
   BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, N_BOOST,
   ITEM_W, ITEM_H,
@@ -548,12 +549,15 @@ let G=null,raf=null,last=0;
 let SESSION='idle';
 let cdLeft=0;                       // giây còn lại của đếm ngược
 const COUNTDOWN=3;
+let drag=null;                      // trạng thái kéo chuột/ngón tay (xem bên dưới)
 
 function buildGame(){
  G={t:0,dist:0,x:0,lane:1,score:0,hits:0,boosts:0,gift:false,
     state:'moving',stTimer:0,boost:0,slipDir:0,pops:[],
+    free:false,target:null,
     ent:MAP.segs.flatMap(s=>s.obstacles.map(o=>({
       t:o.t,id:o.id,x:o.x,y:s.dist+SEG_H/2+o.y,dead:false})))};
+ drag=null;
 }
 /* Gọi khi đổi combo/biến thể: dựng lại map và về idle, không tự chạy */
 function resetGame(){
@@ -621,15 +625,68 @@ addEventListener('keydown',e=>{
  if(e.code==='KeyP'||e.code==='Escape'){togglePause();e.preventDefault()}
 });
 
+/* ===== ĐIỀU KHIỂN BẰNG CHUỘT / NGÓN TAY =====
+   Kéo (drag) để lái tự do: xe chạy theo ngón tay nhưng VẪN bị giới hạn
+   LATERAL_V = 14 m/s như Unity, nên không thể teleport qua vật cản.
+   Nhả tay thì xe tự về tâm làn gần nhất.
+   Chạm nhanh không kéo (tap) vẫn đổi 1 làn như cũ, để dùng được cả hai cách. */
+const TAP_PX=10;               // ngưỡng px để phân biệt tap và drag
+
 cv.addEventListener('pointerdown',e=>{
  if(SESSION==='idle'||SESSION==='over'){startGame();return}
  if(SESSION==='paused'){resumeGame();return}
- if(SESSION==='countdown')return;              // đang đếm ngược thì chưa cho lái
- const r=cv.getBoundingClientRect();mv((e.clientX-r.left)/r.width<.5?-1:1);
+ if(SESSION==='countdown')return;
+ if(!G||G.state==='slipping')return;
+ cv.setPointerCapture(e.pointerId);
+ drag={sx:e.clientX,scar:G.x,moved:false,id:e.pointerId};
+ e.preventDefault();
 });
+
+cv.addEventListener('pointermove',e=>{
+ if(!drag||drag.id!==e.pointerId||!G)return;
+ if(SESSION!=='running'||G.state==='slipping')return;
+ const r=cv.getBoundingClientRect();
+ const dxPx=(e.clientX-drag.sx)/r.width*CW;   // px canvas đã di
+ if(Math.abs(dxPx)>TAP_PX)drag.moved=true;
+ if(!drag.moved)return;
+ /* mục tiêu = vị trí xe lúc bắt đầu kéo + khoảng đã kéo, quy ra mét */
+ G.target=Math.max(-CAR_LIMIT_X,Math.min(CAR_LIMIT_X,drag.scar+dxPx/PS));
+ G.free=true;                                 // đang lái tự do, bỏ snap làn
+ e.preventDefault();
+});
+
+function endDrag(e){
+ if(!drag||(e&&drag.id!==e.pointerId))return;
+ const wasTap=!drag.moved;
+ const startX=drag.sx;
+ drag=null;
+ if(!G||SESSION!=='running')return;
+ if(wasTap){
+  /* tap: đổi 1 làn theo nửa canvas đã chạm */
+  const r=cv.getBoundingClientRect();
+  mv((startX-r.left)/r.width<.5?-1:1);
+ } else {
+  /* nhả sau khi kéo: chốt về làn gần nhất */
+  G.free=false;
+  G.lane=nearestLane(G.x);
+  G.target=null;
+ }
+}
+cv.addEventListener('pointerup',endDrag);
+cv.addEventListener('pointercancel',endDrag);
+cv.addEventListener('pointerleave',e=>{if(drag&&drag.id===e.pointerId)endDrag(e)});
+/* chặn scroll trang khi kéo trên canvas ở mobile */
+cv.style.touchAction='none';
+
+const nearestLane=x=>{
+ let best=0,bd=1e9;
+ LANE_XS.forEach((lx,i)=>{const d=Math.abs(lx-x);if(d<bd){bd=d;best=i}});
+ return best;
+};
 
 function mv(d){
  if(!G||SESSION!=='running'||G.state==='slipping')return;
+ G.free=false;G.target=null;
  G.lane=Math.max(0,Math.min(2,G.lane+d));
 }
 function pop(txt,c){G.pops.push({txt,c,life:1.2})}
@@ -666,9 +723,16 @@ function step(dt){
  if(G.state==='slipping'){
   G.x=Math.max(-LANE_W,Math.min(LANE_W,G.x+G.slipDir*LANE_W*dt/SLIP_DUR));
   G.lane=Math.round(G.x/LANE_W)+1;
+  G.free=false;G.target=null;                  // mất lái thì bỏ điều khiển
  } else {
-  const tx=LANE_XS[G.lane],d=tx-G.x;
+  /* Đích đến: vị trí ngón tay khi đang kéo, ngược lại là tâm làn.
+     Cả hai đều đi qua cùng một giới hạn LATERAL_V nên drag không thể
+     vượt tốc độ ngang mà validator đã dùng để kiểm map. */
+  const tx=(G.free&&G.target!=null)?G.target:LANE_XS[G.lane];
+  const d=tx-G.x;
   G.x+=Math.sign(d)*Math.min(Math.abs(d),LATERAL_V*dt);
+  G.x=Math.max(-CAR_LIMIT_X,Math.min(CAR_LIMIT_X,G.x));
+  if(G.free)G.lane=nearestLane(G.x);           // giữ lane khớp để logic khác dùng
  }
  for(const o of G.ent){
   if(o.dead)continue;
@@ -716,6 +780,16 @@ function draw(){
    else{ctx.beginPath();ctx.roundRect(sx-w/2,sy-h/2,w,h,4);ctx.fill()}
   }
  }
+ /* khi đang kéo: vạch mờ chỉ đích ngón tay, thấy rõ xe đang bị giới hạn tốc độ ngang */
+ if(G.free&&G.target!=null&&SESSION==='running'){
+  const tx=(G.target+ROAD_W/2)*PS;
+  ctx.strokeStyle='rgba(139,158,255,.55)';ctx.lineWidth=2;ctx.setLineDash([5,5]);
+  ctx.beginPath();ctx.moveTo(tx,CARY-46);ctx.lineTo(tx,CARY+46);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(139,158,255,.28)';
+  ctx.beginPath();ctx.arc(tx,CARY,11,0,7);ctx.fill();
+ }
+
  const cx=(G.x+ROAD_W/2)*PS,cw=CAR_W*PS,ch=CAR_H*PS;
  ctx.globalAlpha=G.state==='collided'&&Math.floor(G.t*10)%2?.45:1;
  ctx.fillStyle=G.state==='slipping'?'#C4A484':G.boost>0?'#6B7FE8':G.state==='collided'?'#CC5555':'#8B7BD8';
