@@ -58,17 +58,21 @@
   const REACT_MARGIN = 1.4;
 
   const SLIP_DUR = 1.0;
-  /* Hình phạt va chạm. Cũ là 2.5s ở 0.25× — quá lâu: ở 40 m/s mất 75m, và 2.5 giây
-     bò ở 1/4 tốc độ khiến người chơi cảm giác mất kiểm soát chứ không phải bị phạt.
-       cũ: 2.5 × (1 − 0.25) = 1.875 "giây-tốc-độ" bị mất
-       mới: 1.2 × (1 − 0.45) = 0.66, cộng ramp 0.8 × (1 − 0.725) ≈ 0.22 ⇒ 0.88
-     Tức hình phạt giảm ~53% nhưng vẫn đau. PHẢI khớp với app.ts + init_data.json,
-     nếu không anti-cheat sẽ báo distance vượt allowedMaxDistance. */
-  const COLLIDE_DUR = 1.2, COLLIDE_MULT = 0.45;
+  /* Hình phạt va chạm.
+     Điều quan trọng là TỔNG thời gian xe không chạy đủ tốc, vì đó là cái người chơi
+     cảm nhận — không phải riêng activeDuration:
+       nguyên bản : 2.5s chậm + 0s ramp  = 2.5s  · mất 2.5 × (1−0.25) = 1.875 giây-tốc-độ
+       lần sửa 1  : 1.2s chậm + 0.8s ramp = 2.0s · mất 0.88   ← vẫn dài, ramp bị NỐI THÊM
+       hiện tại   : 0.6s chậm + 0.5s ramp = 1.1s · mất 0.38
+     Tức tổng thời gian giảm 56% so với nguyên bản, quãng đường mất giảm 80%.
+     PHẢI khớp app.ts + init_data.json, nếu không anti-cheat báo distance vượt
+     allowedMaxDistance ("Xác thực khoảng cách thất bại"). */
+  const COLLIDE_DUR = 0.6, COLLIDE_MULT = 0.55;
   /* Hồi phục dần sau va chạm thay vì nhảy thẳng về 100% tốc độ.
-     Server không mô phỏng ramp này, nhưng ramp làm client CHẬM hơn server nên
-     distance luôn nằm dưới cận trên — an toàn với anti-cheat. */
-  const RECOVER_DUR = 0.8;
+     Ramp là PHẦN CỦA hình phạt, không phải thêm vào sau — nên khi tính độ đau phải
+     cộng cả hai. Server không mô phỏng ramp, nhưng ramp làm client CHẬM hơn server
+     nên distance luôn nằm dưới cận trên — an toàn với anti-cheat. */
+  const RECOVER_DUR = 0.5;
   /* Đếm va chạm khi NHIỀU vật cản cùng hàng chạm trong một frame.
      Hình học collider KHÔNG đổi (phải khớp app.ts/Unity tuyệt đối), chỉ đổi cách đếm.
 

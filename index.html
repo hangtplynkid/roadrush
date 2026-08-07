@@ -351,6 +351,7 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
     <div><span>Hits</span><b id="hHits">0</b></div>
   </div>
   <div id="itemTrack" class="itrack"></div>
+  <div class="hint" id="rulesHint"></div>
   <div class="hint"><b>Kéo</b> chuột/ngón tay để lái · chạm nhanh đổi 1 làn<br>
   <b>← →</b> / <b>A D</b> đổi làn · <b>Space</b> play/pause · <b>Esc</b> pause · <b>✕</b> thoát</div>
 </div>
@@ -379,6 +380,19 @@ const {
 let SEL={P1:'A',P2:'A',P3:'A'}, MAP=null;
 
 /* ================= RENDER ================= */
+/* Thông số luật chơi hiện ngay dưới khung game. Trước đây chúng chỉ nằm trong
+   accordion "Config đầy đủ" (đóng mặc định, tab Thiết kế) nên khi đổi số người
+   dùng không thấy gì thay đổi. */
+function renderRulesHint(){
+ const el=document.getElementById('rulesHint');
+ if(!el)return;
+ el.innerHTML=`💥 Va chạm <b>${COLLIDE_DUR}s</b> ở ${COLLIDE_MULT}× `
+  +`+ hồi dần <b>${RECOVER_DUR}s</b> (tổng ${(COLLIDE_DUR+RECOVER_DUR).toFixed(1)}s) · `
+  +`💧 Oil <b>${SLIP_DUR}s</b> mất lái<br>`
+  +`⚡ Boost <b>${BOOST_DUR}s</b> ${BOOST_MULT}× · xuyên <b>${BOOST_PASS}</b> vật cản, `
+  +`cái thứ ${BOOST_PASS+1} thì mất effect`;
+}
+
 function renderParams(){
  document.getElementById('unityParams').innerHTML=`<div class="params">
  <div class="param"><label>Game time</label><div class="val">${GAME_TIME}s</div></div>
@@ -845,7 +859,9 @@ function step(dt){
     if(G.boost>0){G.boost=0;G.boostPass=0;pop('⚡ mất boost','#C0392B')}
     G.hits++;
     if(o.id==='oil'){G.state='slipping';G.stTimer=SLIP_DUR;G.slipDir=G.x<0?1:-1;G.recover=0;pop('💧 mất lái','#6D5BA6')}
-    else{G.state='collided';G.stTimer=COLLIDE_DUR;G.recover=0;pop('💥 '+COLLIDE_DUR+'s '+COLLIDE_MULT+'×','#C0392B')}
+    // báo TỔNG thời gian bị ảnh hưởng (phạt + hồi phục), vì đó là cái người chơi cảm nhận
+    else{G.state='collided';G.stTimer=COLLIDE_DUR;G.recover=0;
+     pop('💥 chậm '+(COLLIDE_DUR+RECOVER_DUR).toFixed(1)+'s','#C0392B')}
    });
   });
  }
@@ -908,6 +924,17 @@ function draw(){
  ctx.fillText(Math.round(G.score),16,34);
  ctx.font='500 10px Be Vietnam Pro';
  ctx.fillText(`${Math.round(G.dist)}m · ${(GAME_TIME-G.t).toFixed(1)}s · ${G.state}`,16,48);
+ /* Chỉ báo đang bị phạt / đang hồi phục, kèm % tốc độ hiện tại so với tốc độ gốc.
+    Không có nó thì rất khó biết mình còn chậm bao lâu và vì sao. */
+ if(G.state==='collided'||G.state==='slipping'||G.recover>0){
+  const pct=Math.round(curSpeed()/speedAt(G.t)*100);
+  const txt=G.state==='collided'?'💥 '+G.stTimer.toFixed(1)+'s · '+pct+'%'
+   :G.state==='slipping'?'💧 '+G.stTimer.toFixed(1)+'s'
+   :'↗ hồi '+G.recover.toFixed(1)+'s · '+pct+'%';
+  ctx.textAlign='right';ctx.font='600 13px Fredoka';
+  ctx.fillStyle=G.state==='moving'?'#4C9A6A':'#C0392B';
+  ctx.fillText(txt,CW-14,G.boost>0?88:32);
+ }
  if(G.boost>0){
   ctx.textAlign='right';
   ctx.fillStyle='#8B9EFF';ctx.font='600 14px Fredoka';
@@ -1349,6 +1376,7 @@ function refresh(){
  document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',SEL[b.dataset.p]===b.dataset.k));
  MAP=buildMap(SEL);
  document.getElementById('comboLbl').textContent=`${SEL.P1}-${SEL.P2}-${SEL.P3}`;
+ renderRulesHint();
  renderParams();renderPhaseTable();renderSpeedTable();renderVariantInfo();
  renderItemTable();renderSpawnTable();renderMap();renderUnityPanel();
  const v=validate(MAP),f=v.filter(x=>!x[0]).length;

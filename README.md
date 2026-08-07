@@ -40,9 +40,9 @@ hỏng vào Unity. Mở `index.html` (không cần server) để xem chỉ số 
 `app.ts` (`CarStates`), `init_data.json` (`carState`). Đó là `activeDuration` và
 `speedMultiplier` của `collided` và `slipping`. Server dùng chúng để mô phỏng lại
 quãng đường; lệch một chút là anti-cheat đánh `distance > allowedMaxDistance` và trả
-"Xác thực khoảng cách thất bại". Hiện `collided = 1.2s × 0.45`, `slipping = 1.0s`.
+"Xác thực khoảng cách thất bại". Hiện `collided = 0.6s × 0.55`, `slipping = 1.0s`.
 
-Ramp hồi phục 0.8s thì **không** cần đồng bộ: nó làm client chậm hơn server, và server
+Ramp hồi phục 0.5s thì **không** cần đồng bộ: nó làm client chậm hơn server, và server
 chỉ kiểm cận trên.
 
 Hai module dùng chung cho cả browser và node qua UMD, nên web và harness kiểm tra
@@ -85,29 +85,36 @@ tối thiểu **2458m**.
 
 | ID | Loại | Collider | Hiệu ứng |
 |---|---|---|---|
-| `cone` | normal | 1.9 × 2.41 | `collided` 1.2s, tốc độ ×0.45, rồi hồi dần 0.8s |
+| `cone` | normal | 1.9 × 2.41 | `collided` 0.6s ×0.55, rồi hồi dần 0.5s |
 | `tire` | normal | 3.3 × 2.57 | như trên |
 | `fence` | normal | 3.51 × 2.64 | như trên |
 | `oil` | oil | 3.28 × 2.33 | `slipping` 1.0s, mất lái |
 
-Giá va chạm tính theo mét bị mất:
+Con số quyết định cảm giác là **tổng thời gian xe không chạy đủ tốc**, không phải
+riêng `activeDuration`:
 
-| Tốc độ | Mất | (luật cũ 2.5s × 0.25) |
-|---|---|---|
-| 20 m/s | 18m | 38m |
-| 30 m/s | 26m | 56m |
-| 40 m/s | 35m | 75m |
-| 50 m/s | 44m | 94m |
+| | Chậm | Ramp | Tổng | Giây-tốc-độ mất |
+|---|---|---|---|---|
+| Nguyên bản | 2.5s × 0.25 | — | **2.5s** | 1.875 |
+| Lần sửa 1 | 1.2s × 0.45 | 0.8s | **2.0s** | 0.88 |
+| Hiện tại | 0.6s × 0.55 | 0.5s | **1.1s** | 0.38 |
 
-Hình phạt cũ `2.5s × 0.25` quá lâu: ở 40 m/s mất 75m, và hai giây rưỡi bò ở một phần
-tư tốc độ khiến người chơi cảm giác mất kiểm soát chứ không phải bị phạt. Tính bằng
-"giây-tốc-độ" bị mất: cũ `2.5 × (1 − 0.25) = 1.875`, mới `1.2 × (1 − 0.45) = 0.66`
-cộng ramp `≈ 0.22` ⇒ `0.88`. Giảm 53% nhưng vẫn là hình phạt thật.
+Lần sửa 1 giảm mức chậm nhưng **nối thêm** ramp vào sau, nên tổng vẫn 2.0s — gần bằng
+nguyên bản và người chơi không thấy khác. Ramp là *phần của* hình phạt, không phải thứ
+cộng thêm; khi tính độ đau phải cộng cả hai.
+
+Quãng đường mất vì một va chạm, đo trực tiếp trên game:
+
+| Va chạm ở | Tốc độ | Mất | Nguyên bản |
+|---|---|---|---|
+| giây 3 | 23 m/s | 9m | ~43m |
+| giây 6 | 26 m/s | 10m | ~49m |
+| giây 9 | 29 m/s | 11m | ~54m |
 
 ### Hồi phục dần sau va chạm
 
-Hết `collided`, tốc độ **không** nhảy thẳng về 100% mà bò từ `0.45×` lên `1.0×` trong
-`RECOVER_DUR = 0.8s`:
+Hết `collided`, tốc độ **không** nhảy thẳng về 100% mà bò từ `0.55×` lên `1.0×` trong
+`RECOVER_DUR = 0.5s`:
 
 ```js
 v *= COLLIDE_MULT + (1 - COLLIDE_MULT) * (1 - recover/RECOVER_DUR)
@@ -116,6 +123,10 @@ v *= COLLIDE_MULT + (1 - COLLIDE_MULT) * (1 - recover/RECOVER_DUR)
 Cảm giác "lấy lại đà" thay vì bị giật một nhịp. Server **không** mô phỏng ramp này,
 nhưng ramp chỉ làm client chậm hơn server nên `distance` vẫn nằm dưới
 `allowedMaxDistance` — an toàn với anti-cheat, không cần sửa `app.ts` cho phần này.
+
+Trong lúc chơi, góc phải canvas hiện trạng thái kèm % tốc độ hiện tại: `💥 0.4s · 55%`
+khi đang bị phạt, `↗ hồi 0.3s · 78%` khi đang hồi. Không có chỉ báo này thì rất khó
+biết mình còn chậm bao lâu và vì sao.
 
 ### Đếm va chạm khi nhiều vật cản cùng hàng
 
@@ -414,7 +425,7 @@ Booster **không** cho bay qua mọi thứ trong 5 giây. Nó cấp:
 - **2 lượt xuyên** (`BOOST_PASS`): xuyên qua 2 vật cản đầu tiên, mỗi lần +80 điểm
 
 Từ vật cản **thứ 3** trở đi, va vào là **mất luôn effect** và ăn đủ hình phạt như
-bình thường — `collided` 1.2s ở 0.45× tốc độ, hoặc `slipping` nếu là oil. Lượt xuyên
+bình thường — `collided` 0.6s ở 0.55× tốc độ, hoặc `slipping` nếu là oil. Lượt xuyên
 không để dành được: hết 5 giây là mất, dù chưa dùng. Ăn booster thứ hai thì nạp lại
 đủ 2 lượt.
 
@@ -451,6 +462,10 @@ Mở `index.html`. Cột trái là dữ liệu, cột phải là chơi thử.
 
 Bảng dài có ô lọc và header dính khi cuộn. Bảng pattern hiện sơ đồ 3 làn × 2 hàng
 kèm toạ độ `x, y` đúng thứ tự Unity sort, copy vào là khớp.
+
+Thông số luật chơi (thời gian phạt, ramp, boost) hiện **ngay dưới khung game**. Trước
+đây chúng chỉ nằm trong accordion "Config đầy đủ" ở tab Thiết kế, đóng mặc định — nên
+khi đổi số thì trông như không có gì thay đổi.
 
 Panel Unity Export có nút **Lint** (kiểm R1–R4 + 1024 cặp), **Mô phỏng 500 seed**,
 **Copy JSON**, **Tải file**.

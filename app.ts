@@ -250,15 +250,16 @@ interface CarState {
 }
 
 // LƯU Ý: phải khớp tuyệt đối với carState trong init_data.json và với client.
-// collided đổi từ 2.5s x 0.25 sang 1.2s x 0.45: hình phạt cũ quá lâu (ở 40 m/s mất
-// 75m, và 2.5 giây bò ở 1/4 tốc độ khiến người chơi cảm giác mất kiểm soát).
-// Client còn có thêm ramp hồi phục 0.8s sau khi hết state; server KHÔNG mô phỏng
-// ramp đó, nhưng ramp chỉ làm client chậm hơn nên distance vẫn nằm dưới
-// allowedMaxDistance — không cần sửa gì thêm ở đây.
+// collided đổi từ 2.5s x 0.25 sang 0.6s x 0.55. Hình phạt cũ quá lâu: ở 40 m/s mất
+// 75m, và 2.5 giây bò ở 1/4 tốc độ khiến người chơi cảm giác mất kiểm soát chứ
+// không phải bị phạt.
+// Client còn có thêm ramp hồi phục 0.5s sau khi hết state (tổng 1.1s xe không đủ
+// tốc); server KHÔNG mô phỏng ramp đó, nhưng ramp chỉ làm client CHẬM hơn nên
+// distance vẫn nằm dưới allowedMaxDistance — không cần sửa gì thêm ở đây.
 const CarStates: CarState[] = [
     {stateId: "moving", activeDuration: -1, speedMultiplier: 1.0},
     {stateId: "slipping", activeDuration: 1.0, speedMultiplier: 1.0},
-    {stateId: "collided", activeDuration: 1.2, speedMultiplier: 0.45}
+    {stateId: "collided", activeDuration: 0.6, speedMultiplier: 0.55}
 ];
 
 const CarSize: size = {width: 2.49, height: 3.965};
