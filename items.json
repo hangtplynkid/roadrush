@@ -1,0 +1,793 @@
+{
+  "note": "Schema roadPathPatternInfos của Unity không có booster/gift. Spawn riêng theo distanceY (world Y) + x (lane).",
+  "lanes": {
+    "L": -3.5,
+    "C": 0,
+    "R": 3.5
+  },
+  "combos": [
+    {
+      "combo": "A-A-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "A-A-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "A-A-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "A-B-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "A-B-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "A-B-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "A-C-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "A-C-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "A-C-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "B-A-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "B-A-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "B-A-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "B-B-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "B-B-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "B-B-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "B-C-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "B-C-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "B-C-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "C-A-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "C-A-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "C-A-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "cross"
+        },
+        {
+          "type": "gift",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "C-B-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "C-B-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "C-B-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 360,
+          "atSecond": 13.6,
+          "context": "gauntlet"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    },
+    {
+      "combo": "C-C-A",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1288,
+          "atSecond": 38.2,
+          "context": "cross"
+        }
+      ]
+    },
+    {
+      "combo": "C-C-B",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "gauntlet"
+        }
+      ]
+    },
+    {
+      "combo": "C-C-C",
+      "items": [
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 328,
+          "atSecond": 12.5,
+          "context": "bait"
+        },
+        {
+          "type": "gift",
+          "lane": "R",
+          "x": 3.5,
+          "distanceY": 616,
+          "atSecond": 21.2,
+          "context": "bait"
+        },
+        {
+          "type": "booster",
+          "lane": "L",
+          "x": -3.5,
+          "distanceY": 1256,
+          "atSecond": 37.4,
+          "context": "bait"
+        }
+      ]
+    }
+  ]
+}

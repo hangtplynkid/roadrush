@@ -1,0 +1,1180 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Road Rush — Level Design Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#F4F1FD;color:#2E2A45;padding:12px;line-height:1.45}
+/* Hai cột cân nhau: cột phải rộng đủ cho canvas 390px + padding panel + HUD,
+   cột trái lấy phần còn lại nhưng không hẹp hơn 520px để bảng không bị bó. */
+.main-layout{display:grid;grid-template-columns:minmax(520px,1fr) 424px;
+  gap:16px;max-width:1560px;margin:0 auto;align-items:start}
+@media(max-width:1180px){.main-layout{grid-template-columns:1fr;max-width:860px}}
+.col-left{min-width:0}
+.col-right{position:sticky;top:12px}
+@media(max-width:1180px){.col-right{position:static}}
+h1{font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;color:#5B4B9E;margin-bottom:2px}
+.panel{background:rgba(255,255,255,.75);border:1px solid rgba(139,123,216,.22);border-radius:12px;padding:10px 13px;margin-bottom:8px}
+.panel-sm{padding:8px 12px}
+h2{font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;color:#5B4B9E;margin-bottom:5px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grp{display:flex;flex-direction:column;gap:4px}
+.grp label{font-size:9px;font-weight:600;color:#7C74A0;letter-spacing:.04em;text-transform:uppercase}
+.seg{display:flex;gap:3px}
+.seg button{font-family:inherit;font-size:11px;font-weight:500;padding:5px 12px;border:1px solid rgba(139,123,216,.3);background:#fff;color:#5B4B9E;border-radius:7px;cursor:pointer}
+.seg button:hover{background:#EFEBFC}
+.seg button.on{background:#8B7BD8;color:#fff;border-color:#8B7BD8}
+.btn{font-family:inherit;font-size:11px;font-weight:600;padding:6px 13px;border:none;border-radius:7px;cursor:pointer}
+.btn-p{background:#8B7BD8;color:#fff}.btn-p:hover{background:#7A68CC}
+.btn-s{background:#fff;color:#5B4B9E;border:1px solid rgba(139,123,216,.35)}.btn-s:hover{background:#EFEBFC}
+.badge{display:inline-flex;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;margin-right:4px}
+.b-ok{background:#DEF5EC;color:#1B6B51}.b-err{background:#FCE4E4;color:#8F2A2A}.b-i{background:#EFEBFC;color:#5B4B9E}
+table{width:100%;border-collapse:collapse;font-size:10.5px}
+th,td{text-align:left;padding:3px 6px;border-bottom:1px solid #EDE9FA}
+th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#8C85AC;font-weight:600}
+td b{font-family:'Fredoka',sans-serif;font-size:12px;color:#3D3266}
+.mono{font-family:'JetBrains Mono',monospace;font-size:10px;color:#5B4B9E}
+.params{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:4px}
+.param{background:#F8F6FE;border-radius:6px;padding:5px 8px}
+.param label{font-size:8px;font-weight:600;color:#8C85AC;text-transform:uppercase;display:block}
+.param .val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:#3D3266}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.chk{display:flex;gap:5px;font-size:10px;padding:4px 7px;border-radius:6px;background:#F8F6FE;align-items:flex-start}
+.chk.bad{background:#FCE9E9}
+.chk .ic{font-weight:700;font-size:11px}.chk.good .ic{color:#2E9070}.chk.bad .ic{color:#C0392B}
+.mapscroll{overflow-x:auto;border-radius:8px;background:#fff;border:1px solid rgba(139,123,216,.18)}
+.mapscroll::-webkit-scrollbar{height:7px}.mapscroll::-webkit-scrollbar-thumb{background:#C9BFEB;border-radius:4px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10px;color:#6B6390;margin-top:5px}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{width:10px;height:8px;border-radius:2px;display:inline-block}
+canvas#cv{display:block;border-radius:20px;background:#EDE9FB;width:390px;box-shadow:0 6px 22px rgba(91,75,158,.14)}
+.game-hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:8px;font-size:11px}
+.game-hud div{background:#F8F6FE;border-radius:6px;padding:4px 8px;display:flex;justify-content:space-between}
+.game-hud b{font-family:'Fredoka',sans-serif;font-size:13px;color:#3D3266}
+.game-hud span{color:#7C74A0;font-weight:500}
+.hint{font-size:10px;color:#8C85AC;margin-top:6px;text-align:center}
+.tag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-right:3px}
+.combo{font-family:'Fredoka',sans-serif;font-size:15px;color:#5B4B9E}
+.warn{background:#FFF6E5;border:1px solid #F0C674;border-radius:8px;padding:7px 10px;font-size:10px;color:#7A5A1E;line-height:1.5}
+.warn b{color:#5A3F0E}
+.opt{display:flex;gap:6px;align-items:flex-start;margin-top:4px}
+.opt input{margin-top:2px}
+.opt label{font-size:10px;color:#6B6390;cursor:pointer}
+/* sơ đồ pattern 3 làn × 2 hàng */
+.pgrid{display:inline-flex;flex-direction:column;gap:1px}
+.prow{display:flex;gap:1px}
+.pc{width:13px;height:11px;display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:8px;border-radius:2px;
+    background:#F4F2FB;color:#D8D2EC}
+.pc.blk{background:#A66B4A;color:#fff}
+.pc.oil{background:#6D5BA6;color:#fff}
+.coord{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;
+       padding:1px 4px;margin:1px 2px 1px 0;border-radius:3px;
+       background:#EEF4FF;color:#2E6DA4;white-space:nowrap}
+.coord.oil{background:#EDE7F8;color:#5B3FA6}
+
+/* ---------- sticky toolbar ---------- */
+.toolbar{position:sticky;top:0;z-index:20;background:rgba(244,241,253,.96);
+         backdrop-filter:blur(8px);padding:8px 0 6px;margin:0 0 8px}
+.toolbar .panel{margin-bottom:0}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:3px;margin-bottom:8px;border-bottom:2px solid rgba(139,123,216,.18)}
+.tabs button{font-family:'Fredoka',sans-serif;font-size:12px;font-weight:500;
+  padding:7px 15px;border:none;background:none;color:#8C85AC;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:.12s}
+.tabs button:hover{color:#5B4B9E}
+.tabs button.on{color:#5B4B9E;font-weight:600;border-bottom-color:#8B7BD8}
+.tabs button .n{font-family:'JetBrains Mono',monospace;font-size:9px;color:#B0A8CC;margin-left:4px}
+.tabs button.on .n{color:#8B7BD8}
+.tabpane{display:none}
+.tabpane.on{display:block}
+
+/* ---------- collapsible ---------- */
+details.acc{border:1px solid rgba(139,123,216,.22);border-radius:10px;
+  background:rgba(255,255,255,.75);margin-bottom:8px;overflow:hidden}
+details.acc>summary{font-family:'Fredoka',sans-serif;font-size:12.5px;font-weight:600;
+  color:#5B4B9E;padding:8px 13px;cursor:pointer;list-style:none;display:flex;
+  align-items:center;gap:8px;user-select:none}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc>summary::before{content:'▸';font-size:9px;color:#B0A8CC;transition:transform .15s}
+details.acc[open]>summary::before{transform:rotate(90deg)}
+details.acc>summary:hover{background:rgba(139,123,216,.06)}
+details.acc .body{padding:0 13px 11px}
+summary .meta{margin-left:auto;font-family:'Be Vietnam Pro',sans-serif;
+  font-size:9.5px;font-weight:400;color:#9A93B8}
+
+/* ---------- filter box ---------- */
+.filter{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.filter input{flex:1;min-width:0;font-family:inherit;font-size:10px;padding:4px 8px;
+  border:1px solid rgba(139,123,216,.3);border-radius:6px;background:#fff;color:#2E2A45}
+.filter input:focus{outline:none;border-color:#8B7BD8}
+.filter .cnt{font-size:9px;color:#9A93B8;white-space:nowrap}
+
+/* ---------- sticky table head ---------- */
+.scroll-t{max-height:230px;overflow:auto}
+.scroll-t::-webkit-scrollbar{width:7px;height:7px}
+.scroll-t::-webkit-scrollbar-thumb{background:#C9BFEB;border-radius:4px}
+.scroll-t table{border-collapse:separate;border-spacing:0}
+.scroll-t th{position:sticky;top:0;background:#F6F4FC;z-index:1;
+  border-bottom:1px solid #E4DFF5}
+tr.hide{display:none}
+tbody tr:hover{background:rgba(139,123,216,.06)}
+
+/* ---------- summary strip ---------- */
+.strip{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.stat{flex:1;min-width:74px;background:rgba(255,255,255,.8);
+  border:1px solid rgba(139,123,216,.2);border-radius:9px;padding:6px 9px}
+.stat label{font-size:8px;font-weight:600;color:#9A93B8;text-transform:uppercase;
+  letter-spacing:.04em;display:block}
+.stat .v{font-family:'Fredoka',sans-serif;font-size:15px;color:#3D3266;line-height:1.2}
+.stat .v small{font-family:'Be Vietnam Pro',sans-serif;font-size:9px;color:#9A93B8;font-weight:400}
+.stat.ok .v{color:#1B6B51}.stat.err .v{color:#C0392B}
+
+/* ---------- item tracker (cột phải) ---------- */
+.itrack{display:flex;gap:5px;margin-top:6px}
+.itrack .it{flex:1;display:flex;align-items:center;gap:5px;padding:4px 7px;
+  border-radius:6px;background:#F8F6FE;font-size:10px;color:#7C74A0;
+  border:1px solid transparent;transition:.15s}
+.itrack .it .ico{font-size:11px}
+.itrack .it .at{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9A93B8}
+.itrack .it.got{background:#DEF5EC;color:#1B6B51;border-color:#9BD9C2}
+.itrack .it.near{background:#FFF6E5;border-color:#F0C674;color:#7A5A1E}
+.itrack .it.miss{background:#F4F4F8;color:#B8B2C8;text-decoration:line-through}
+</style>
+
+<div class="main-layout">
+<div class="col-left">
+
+<!-- ══════════ TOOLBAR (sticky) ══════════ -->
+<div class="toolbar">
+<div class="panel panel-sm">
+  <div class="row">
+    <div class="grp"><label>P1 Warmup</label><div class="seg" id="s1"></div></div>
+    <div class="grp"><label>P2 Cruise+Trap</label><div class="seg" id="s2"></div></div>
+    <div class="grp"><label>P3 Intense+Peak</label><div class="seg" id="s3"></div></div>
+    <div class="grp"><label>Combo</label><span class="combo" id="comboLbl">A-A-A</span></div>
+    <div style="flex:1"></div>
+    <div class="grp"><label>&nbsp;</label>
+      <div class="row" style="gap:5px">
+        <span class="badge" id="vbadge"></span>
+        <button class="btn btn-s" id="testAll">Test 27 tổ hợp</button>
+        <span class="badge" id="sbadge" style="display:none"></span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ TABS ══════════ -->
+<div class="tabs" id="tabs">
+  <button data-tab="map" class="on">Map<span class="n" id="tnMap"></span></button>
+  <button data-tab="design">Thiết kế</button>
+  <button data-tab="unity">Unity Export<span class="n" id="tnUnity"></span></button>
+</div>
+
+<!-- ────────── TAB 1 · MAP ────────── -->
+<div class="tabpane on" data-pane="map">
+  <div class="strip" id="mapStrip"></div>
+
+  <div class="panel">
+    <div class="mapscroll"><svg id="mapSvg" height="176"></svg></div>
+    <div class="legend">
+      <span><i class="sw" style="background:#E8A06B"></i>Cone</span>
+      <span><i class="sw" style="background:#A66B4A"></i>Fence</span>
+      <span><i class="sw" style="background:#5B8FCC"></i>Tire</span>
+      <span><i class="sw" style="background:#6D5BA6;width:16px"></i>Oil</span>
+      <span><i class="sw" style="background:#8B9EFF;border-radius:50%;width:10px;height:10px"></i>Booster</span>
+      <span><i class="sw" style="background:#E8A0C8;border-radius:50%;width:10px;height:10px"></i>Gift</span>
+      <span style="color:#bbb">|</span>
+      <span style="font-size:9px;color:#8C85AC">1 ô = segment 32m · 2 hàng (y −8 / +8) · cách nhau 16m</span>
+    </div>
+  </div>
+
+  <details class="acc" open>
+    <summary>Validator<span class="meta" id="mValid"></span></summary>
+    <div class="body"><div class="checks" id="checks"></div></div>
+  </details>
+
+  <details class="acc" open>
+    <summary>Item placement<span class="meta" id="mItem"></span></summary>
+    <div class="body"><table id="itemTable"></table></div>
+  </details>
+
+  <details class="acc">
+    <summary>Obstacle của map này<span class="meta" id="obsCount"></span></summary>
+    <div class="body">
+      <div style="font-size:9px;color:#8C85AC;margin-bottom:5px">
+        <b>World Y</b> = seg×32 + 16 + localY (vị trí tuyệt đối, dùng cho fixed map / spawn item) ·
+        <b>Local Y</b> + <b>X</b> = giá trị nhập vào <span class="mono">position</span> của pattern
+      </div>
+      <div class="filter">
+        <input id="fObs" placeholder="Lọc: oil · booster · gift · tire · L/C/R · số segment…">
+        <span class="cnt" id="cObs"></span>
+      </div>
+      <div class="scroll-t"><table id="obstacleTable"></table></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Spawn list theo segment<span class="meta" id="mSpawn"></span></summary>
+    <div class="body">
+      <div class="filter">
+        <input id="fSpawn" placeholder="Lọc: oil · item · breath · P1/P2/P3…">
+        <span class="cnt" id="cSpawn"></span>
+      </div>
+      <div class="scroll-t"><table id="spawnTable"></table></div>
+    </div>
+  </details>
+</div>
+
+<!-- ────────── TAB 2 · THIẾT KẾ ────────── -->
+<div class="tabpane" data-pane="design">
+  <details class="acc" open>
+    <summary>Phase / Difficulty curve<span class="meta">mật độ, breath, oil, react theo phase</span></summary>
+    <div class="body"><table id="phaseTable"></table></div>
+  </details>
+
+  <details class="acc" open>
+    <summary>Variant library<span class="meta">A/B/C của từng phase</span></summary>
+    <div class="body"><div id="variantInfo"></div></div>
+  </details>
+
+  <details class="acc" open>
+    <summary>Speed levels<span class="meta">20 → 50 m/s</span></summary>
+    <div class="body"><table id="speedTable"></table></div>
+  </details>
+
+  <details class="acc">
+    <summary>Config đầy đủ<span class="meta">thông số game</span></summary>
+    <div class="body"><div id="unityParams"></div></div>
+  </details>
+</div>
+
+<!-- ────────── TAB 3 · UNITY EXPORT ────────── -->
+<div class="tabpane" data-pane="unity">
+  <div class="panel panel-sm" style="border-color:rgba(91,143,204,.35);background:rgba(240,247,255,.8)">
+    <div class="row">
+      <b style="font-family:'Fredoka';font-size:12px;color:#2E6DA4">road_path_patterns.json</b>
+      <span class="badge" id="poolBadge"></span>
+      <span class="badge" id="stressBadge" style="display:none"></span>
+      <div style="flex:1"></div>
+      <button class="btn btn-s" id="btnLintPool">Lint</button>
+      <button class="btn btn-s" id="btnStress">Mô phỏng 500 seed</button>
+      <button class="btn btn-p" id="btnCopyJson">Copy JSON</button>
+      <button class="btn btn-s" id="btnDownJson">Tải file</button>
+    </div>
+    <div style="font-size:9px;color:#8C85AC;margin-top:5px">
+      Hoặc <span class="mono">node export_unity.js</span> để kiểm tra rồi ghi thẳng vào file (có backup <span class="mono">.bak</span>)
+    </div>
+  </div>
+
+  <div id="oilNote"></div>
+
+  <details class="acc" open>
+    <summary>Pattern pool<span class="meta" id="poolCount"></span></summary>
+    <div class="body">
+      <div style="font-size:9px;color:#8C85AC;margin-bottom:5px">
+        Sơ đồ: hàng trên = y+8, hàng dưới = y−8 (xe chạy theo +Y nên gặp y−8 trước) ·
+        cột L/C/R ⇒ x = −3.5 / 0 / +3.5 ·
+        <span class="pc blk" style="display:inline-flex">■</span> vật cản ·
+        <span class="pc oil" style="display:inline-flex">O</span> oil ·
+        toạ độ đã sort theo (y, x) khớp thứ tự Unity đọc
+      </div>
+      <div class="filter">
+        <input id="fPool" placeholder="Lọc: oil · gate · weave · single · P1/P2/P3…">
+        <span class="cnt" id="cPool"></span>
+      </div>
+      <div class="scroll-t"><table id="poolTable"></table></div>
+    </div>
+  </details>
+
+  <details class="acc" open>
+    <summary>Tier<span class="meta">cộng dồn, khớp cách app.ts chọn tier</span></summary>
+    <div class="body"><table id="tierTable"></table></div>
+  </details>
+
+  <details class="acc">
+    <summary>Luật pool<span class="meta">vì sao pattern phải theo lattice</span></summary>
+    <div class="body"><div id="poolRules" style="font-size:9.5px;color:#6B6390;line-height:1.55"></div></div>
+  </details>
+
+  <details class="acc">
+    <summary>JSON preview<span class="meta" id="mJson"></span></summary>
+    <div class="body">
+      <pre id="jsonPreview" class="scroll-t" style="font-family:'JetBrains Mono',monospace;font-size:9px;background:#fff;border:1px solid rgba(139,123,216,.2);border-radius:8px;padding:8px;margin:0;white-space:pre"></pre>
+    </div>
+  </details>
+</div>
+</div>
+
+<div class="col-right">
+<div class="panel" style="padding:11px 12px">
+  <div class="row" style="margin-bottom:8px;gap:6px">
+    <h2 style="margin:0">Play test</h2>
+    <span class="badge b-i" id="phaseNow">P1</span>
+    <div style="flex:1"></div>
+    <button class="btn btn-p" id="btnPlayPause">▶ Play</button>
+    <button class="btn btn-s" id="btnRestart">↻ Lại</button>
+  </div>
+  <canvas id="cv" width="390" height="780"></canvas>
+  <div class="game-hud">
+    <div><span>Score</span><b id="hScore">0</b></div>
+    <div><span>Dist</span><b id="hDist">0m</b></div>
+    <div><span>Time</span><b id="hTime">60.0</b></div>
+    <div><span>Speed</span><b id="hSpd">20</b></div>
+    <div><span>Boost</span><b id="hBoost">0/2</b></div>
+    <div><span>Hits</span><b id="hHits">0</b></div>
+  </div>
+  <div id="itemTrack" class="itrack"></div>
+  <div class="hint">← → hoặc A / D đổi làn · <b>Space</b> play/pause · <b>P</b> hoặc <b>Esc</b> pause</div>
+</div>
+</div>
+</div>
+
+<script src="level_design.js"></script>
+<script src="unity_patterns.js"></script>
+<script>
+/* Config + level design + validator nằm trong level_design.js để UI và
+   harness kiểm tra (node check_levels.js) dùng CHUNG một nguồn sự thật. */
+const {
+  GAME_TIME, SEG_H, ROAD_W, LANE_XS, LANE_W, ROW_GAP,
+  SPEED_LEVELS, OBS_MAP,
+  CAR_W, CAR_H, LATERAL_V, LANE_TIME,
+  SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT,
+  BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, N_BOOST,
+  ITEM_W, ITEM_H,
+  BASE_DIST, BOOST_RESERVE,
+  speedAt, distAtTime, timeAtDist,
+  PHASE_DEF,
+  buildMap, rowsOf, validate, lintLibrary, testAllCombos
+} = LD;
+
+/* ================= STATE ================= */
+let SEL={P1:'A',P2:'A',P3:'A'}, MAP=null;
+
+/* ================= RENDER ================= */
+function renderParams(){
+ document.getElementById('unityParams').innerHTML=`<div class="params">
+ <div class="param"><label>Game time</label><div class="val">${GAME_TIME}s</div></div>
+ <div class="param"><label>Segment</label><div class="val">${SEG_H}m</div></div>
+ <div class="param"><label>Road W</label><div class="val">${ROAD_W}m</div></div>
+ <div class="param"><label>Lanes</label><div class="val">3 · ±${LANE_W}</div></div>
+ <div class="param"><label>Row lattice</label><div class="val">${ROW_GAP}m</div></div>
+ <div class="param"><label>Base dist</label><div class="val">${BASE_DIST|0}m</div></div>
+ <div class="param"><label>+Boost res</label><div class="val">${BOOST_RESERVE}m</div></div>
+ <div class="param"><label>Segments</label><div class="val">${MAP.segs.length}</div></div>
+ <div class="param"><label>Total len</label><div class="val">${MAP.segs.length*SEG_H}m</div></div>
+ <div class="param"><label>Car</label><div class="val">${CAR_W}×${CAR_H}</div></div>
+ <div class="param"><label>Lateral V</label><div class="val">${LATERAL_V} m/s</div></div>
+ <div class="param"><label>Lane time</label><div class="val">${(LANE_W/LATERAL_V).toFixed(2)}s</div></div>
+ <div class="param"><label>Collide</label><div class="val">${COLLIDE_DUR}s ${COLLIDE_MULT}×</div></div>
+ <div class="param"><label>Slip</label><div class="val">${SLIP_DUR}s</div></div>
+ <div class="param"><label>Boost</label><div class="val">${BOOST_DUR}s ${BOOST_MULT}×</div></div>
+ <div class="param"><label>Boost pts</label><div class="val">+${BOOST_SCORE}</div></div>
+ <div class="param"><label>Gift pts</label><div class="val">+${GIFT_SCORE}</div></div>
+ <div class="param"><label>Combos</label><div class="val">3³ = 27</div></div>
+ </div>`;
+}
+
+function renderPhaseTable(){
+ const segs=MAP.segs;
+ let h='<tr><th>Phase</th><th>Variant</th><th>Seg</th><th>Dist</th><th>Time</th><th>Speed</th><th>Obs/seg</th><th>Breath</th><th>Oil</th><th>React</th></tr>';
+ for(const pd of PHASE_DEF){
+  const g=segs.filter(s=>s.phase===pd.key);
+  if(!g.length)continue;
+  const n=g.reduce((a,s)=>a+s.obstacles.filter(o=>o.t!=='booster'&&o.t!=='gift').length,0);
+  const empt=g.filter(s=>!s.obstacles.length).length;
+  const t0=g[0].time,t1=g[g.length-1].time+SEG_H/speedAt(g[g.length-1].time);
+  const oilN=g.filter(s=>s.obstacles.some(o=>o.t==='oil')).length;
+  const react=(ROW_GAP/speedAt(t1)).toFixed(2);
+  h+=`<tr><td><b>${pd.key}</b> ${pd.label}</td><td><b>${MAP.sel[pd.key]}</b></td>
+  <td>${g.length}</td><td class="mono">${g[0].dist}–${g[g.length-1].dist+SEG_H}</td>
+  <td>${t0.toFixed(1)}–${t1.toFixed(1)}s</td><td>${speedAt(t0).toFixed(0)}→${speedAt(t1).toFixed(0)}</td>
+  <td><b>${(n/g.length).toFixed(2)}</b></td><td>${Math.round(empt/g.length*100)}%</td>
+  <td>${oilN||'—'}</td><td class="mono">${react}s</td></tr>`;
+ }
+ document.getElementById('phaseTable').innerHTML=h;
+}
+
+function renderSpeedTable(){
+ let h='<tr><th>Time</th><th>Speed</th><th>Dist</th><th>Segment #</th><th>React @16m</th></tr>';
+ for(const s of SPEED_LEVELS){
+  const d=distAtTime(s.t);
+  h+=`<tr><td><b>${s.t}s</b></td><td>${s.v} m/s</td><td class="mono">${d|0}m</td>
+  <td>${Math.floor(d/SEG_H)}</td><td class="mono">${(ROW_GAP/s.v).toFixed(2)}s</td></tr>`;
+ }
+ document.getElementById('speedTable').innerHTML=h;
+}
+
+function renderVariantInfo(){
+ let h='';
+ for(const pd of PHASE_DEF){
+  const col={P1:'#2E9070',P2:'#5B4B9E',P3:'#C0392B'}[pd.key];
+  h+=`<div style="margin-bottom:6px">
+  <span class="tag" style="background:${col}1a;color:${col}">${pd.key}</span>
+  <span style="font-size:10px;font-weight:600;color:#5B4B9E">${pd.label}</span><br>`;
+  for(const k of ['A','B','C']){
+   const lib=pd.lib[k];
+   const n=lib.reduce((a,s)=>{
+    let c=0;
+    [s.r1,s.r2].forEach(r=>{if(!r)return;
+     if(r.oil!==undefined)c++;else if(r.item)c+=0;else c+=r.block.length});
+    return a+c},0);
+   const oilN=lib.filter(s=>s.r1&&s.r1.oil!==undefined).length;
+   const itN=lib.filter(s=>(s.r1&&s.r1.item)||(s.r2&&s.r2.item)).length;
+   const ctx=lib.map(s=>(s.r1&&s.r1.item)?s.r1.item:null).filter(Boolean);
+   const on=MAP.sel[pd.key]===k;
+   h+=`<div style="font-size:9.5px;color:${on?'#5B4B9E':'#8C85AC'};font-weight:${on?600:400};padding-left:6px">
+   ${on?'▸':'·'} ${k}: ${lib.length} seg · ${n} obs · ${(n/lib.length).toFixed(2)}/seg · ${oilN} oil · ${itN} item</div>`;
+  }
+  h+='</div>';
+ }
+ document.getElementById('variantInfo').innerHTML=h;
+}
+
+function renderItemTable(){
+ let h='<tr><th>#</th><th>Type</th><th>Seg</th><th>World Y</th><th>X</th><th>Lane</th><th>t</th><th>Context</th></tr>';
+ const desc={cross:'Gate ép → làn đối diện (32m)',gauntlet:'Kẹp 2 đầu cùng làn',bait:'Trống rồi gate chặn ngay'};
+ MAP.items.forEach((it,i)=>{
+  const x=LANE_XS[it.lane];
+  h+=`<tr><td><b>${i+1}</b></td><td>${it.type==='booster'?'⚡ Boost':'🎁 Gift'}</td>
+  <td>${it.seg}</td><td class="mono"><b>${it.dist|0}</b></td>
+  <td class="mono">${x>0?'+':''}${x}</td><td>${['L','C','R'][it.lane]}</td>
+  <td>${it.time.toFixed(1)}s</td>
+  <td style="font-size:9px">${it.ctx}<br><span style="color:#8C85AC">${desc[it.ctx]}</span></td></tr>`;
+ });
+ document.getElementById('itemTable').innerHTML=h;
+}
+
+function renderSpawnTable(){
+ let h='<tr><th>#</th><th>Ph</th><th>Dist</th><th>t</th><th>Kind</th><th>Obstacles (x, localY)</th></tr>';
+ for(const s of MAP.segs){
+  const kc={rhythm:'#5B4B9E',breath:'#8C85AC',oil:'#6D5BA6',item:'#8B9EFF'}[s.kind]||'#666';
+  const os=s.obstacles.length
+   ? s.obstacles.slice().sort((a,b)=>a.y-b.y||a.x-b.x).map(o=>{
+      const tag=o.t==='booster'?'⚡':o.t==='gift'?'🎁':o.t==='oil'?'oil':o.id;
+      return `<span class="coord${o.t==='oil'?' oil':''}">${tag} ${o.x>0?'+':''}${o.x},${o.y>0?'+':''}${o.y}</span>`;
+     }).join('')
+   : '<span style="color:#BBB">—</span>';
+  h+=`<tr><td>${s.idx}</td><td style="font-size:9px">${s.phase}</td><td class="mono">${s.dist}</td>
+  <td>${s.time.toFixed(1)}</td><td style="color:${kc};font-size:9px">${s.kind}</td>
+  <td>${os}</td></tr>`;
+ }
+ document.getElementById('spawnTable').innerHTML=h;
+}
+
+function renderMap(){
+ const svg=document.getElementById('mapSvg');svg.innerHTML='';
+ const E=(t,a)=>{const e=document.createElementNS('http://www.w3.org/2000/svg',t);
+  for(const k in a)e.setAttribute(k,a[k]);return e};
+ const SW=32,PAD=30,LH=30,LG=4,TOP=50;
+ const laneY=l=>TOP+l*(LH+LG);
+ const segs=MAP.segs,W=segs.length*SW+PAD*2;
+ svg.setAttribute('width',W);
+
+ // dải phase
+ const pcol={P1:'#E8F8F5',P2:'#EAF2FF',P3:'#FBE7DE'};
+ for(const pd of PHASE_DEF){
+  const g=segs.filter(s=>s.phase===pd.key); if(!g.length)continue;
+  const x0=PAD+g[0].idx*SW,w=g.length*SW;
+  svg.appendChild(E('rect',{x:x0,y:18,width:w,height:15,rx:3,fill:pcol[pd.key]}));
+  const t=E('text',{x:x0+5,y:29,'font-size':8.5,'font-weight':600,fill:'#6B6390','font-family':'Be Vietnam Pro'});
+  t.textContent=`${pd.key}-${MAP.sel[pd.key]} · ${pd.label}`;svg.appendChild(t);
+ }
+ // mốc 60s
+ const s60=segs.find(s=>s.time>=GAME_TIME);
+ if(s60){const x=PAD+s60.idx*SW;
+  svg.appendChild(E('line',{x1:x,y1:16,x2:x,y2:laneY(2)+LH+6,stroke:'#C0392B','stroke-width':1.5,'stroke-dasharray':'3,2'}));
+  const t=E('text',{x:x+3,y:14,'font-size':8,fill:'#C0392B','font-weight':600,'font-family':'Be Vietnam Pro'});
+  t.textContent='60s';svg.appendChild(t);}
+ // mốc thời gian
+ for(let i=0;i<segs.length;i+=5){
+  const x=PAD+i*SW;
+  const t=E('text',{x,y:12,'font-size':7.5,'text-anchor':'middle',fill:'#B8AFD8','font-family':'JetBrains Mono'});
+  t.textContent=segs[i].time.toFixed(0)+'s';svg.appendChild(t);
+ }
+ for(let l=0;l<3;l++)svg.appendChild(E('rect',{x:PAD,y:laneY(l),width:W-PAD*2,height:LH,rx:3,fill:'#F8F6FE',stroke:'#E9E4F8','stroke-width':.5}));
+ ['L','C','R'].forEach((n,l)=>{const t=E('text',{x:PAD-6,y:laneY(l)+LH/2+3,'font-size':9,'text-anchor':'end',fill:'#9A93B8','font-family':'Be Vietnam Pro'});t.textContent=n;svg.appendChild(t)});
+
+ const col={oil:'#6D5BA6',fence:'#A66B4A',cone:'#E8A06B',tire:'#5B8FCC'};
+ segs.forEach(s=>{
+  const x0=PAD+s.idx*SW;
+  if(s.kind==='breath')svg.appendChild(E('rect',{x:x0,y:laneY(0),width:SW,height:3*LH+2*LG,fill:'#FCFBFE'}));
+  if(s.kind==='item')svg.appendChild(E('rect',{x:x0,y:laneY(0),width:SW,height:3*LH+2*LG,fill:'rgba(139,158,255,.12)'}));
+  if(s.idx>0)svg.appendChild(E('line',{x1:x0,y1:laneY(0)-2,x2:x0,y2:laneY(2)+LH+2,stroke:'#E4DFF5','stroke-width':.5,'stroke-dasharray':'2,2'}));
+  for(const o of s.obstacles){
+   const ox=x0+(o.row===1?SW*0.27:SW*0.73), oy=laneY(o.lane)+LH/2;
+   if(o.t==='oil')svg.appendChild(E('ellipse',{cx:ox,cy:oy,rx:7,ry:4.5,fill:col.oil,opacity:.85}));
+   else if(o.t==='booster'){
+    svg.appendChild(E('circle',{cx:ox,cy:oy,r:7.5,fill:'#8B9EFF'}));
+    const t=E('text',{x:ox,y:oy+3.5,'font-size':8,'text-anchor':'middle',fill:'#fff'});t.textContent='⚡';svg.appendChild(t);
+   } else if(o.t==='gift'){
+    svg.appendChild(E('rect',{x:ox-7.5,y:oy-7.5,width:15,height:15,rx:3,fill:'#E8A0C8'}));
+    svg.appendChild(E('rect',{x:ox-1,y:oy-7.5,width:2,height:15,fill:'#fff'}));
+    svg.appendChild(E('rect',{x:ox-7.5,y:oy-1,width:15,height:2,fill:'#fff'}));
+   } else svg.appendChild(E('rect',{x:ox-3,y:oy-5.5,width:6,height:11,rx:2,fill:col[o.id]}));
+  }
+ });
+ for(let i=0;i<segs.length;i+=5){
+  const x=PAD+i*SW;
+  svg.appendChild(E('line',{x1:x,y1:laneY(2)+LH+4,x2:x,y2:laneY(2)+LH+9,stroke:'#C9BFEB','stroke-width':1}));
+  const t=E('text',{x,y:laneY(2)+LH+19,'font-size':8,'text-anchor':'middle',fill:'#9A93B8','font-family':'JetBrains Mono'});
+  t.textContent=(i*SEG_H)+'m';svg.appendChild(t);
+ }
+}
+
+function renderChecks(v){
+ // sắp lỗi lên đầu để không phải quét cả danh sách
+ const sorted=v.slice().sort((a,b)=>(a[0]?1:0)-(b[0]?1:0));
+ document.getElementById('checks').innerHTML=sorted.map(([ok,label,detail])=>
+  `<div class="chk ${ok?'good':'bad'}"><span class="ic">${ok?'✓':'✕'}</span>
+   <span><b style="font-weight:500">${label}</b><br>
+   <span style="color:#8C85AC;font-size:9.5px">${detail}</span></span></div>`).join('');
+}
+
+/* ================= PLAYABLE ================= */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const CW=390,CH=780,PS=CW/ROAD_W,CARY=CH*0.80;
+let G=null,raf=null,last=0;
+
+/* ===== TRẠNG THÁI PHIÊN CHƠI =====
+   idle      · đã dựng map, chờ bấm Play
+   running   · đang chạy
+   paused    · dừng, giữ nguyên mọi thứ
+   countdown · đếm ngược trước khi chạy lại sau pause (cho người chơi kịp nhìn map)
+   over      · hết 60s
+   Tách khỏi G.state (moving/collided/slipping) vì đó là trạng thái của XE. */
+let SESSION='idle';
+let cdLeft=0;                       // giây còn lại của đếm ngược
+const COUNTDOWN=3;
+
+function buildGame(){
+ G={t:0,dist:0,x:0,lane:1,score:0,hits:0,boosts:0,gift:false,
+    state:'moving',stTimer:0,boost:0,slipDir:0,pops:[],
+    ent:MAP.segs.flatMap(s=>s.obstacles.map(o=>({
+      t:o.t,id:o.id,x:o.x,y:s.dist+SEG_H/2+o.y,dead:false})))};
+}
+/* Gọi khi đổi combo/biến thể: dựng lại map và về idle, không tự chạy */
+function resetGame(){
+ buildGame();
+ SESSION='idle'; cdLeft=0;
+ last=performance.now();
+ syncControls();
+ if(!raf)raf=requestAnimationFrame(loop);
+}
+function startGame(){
+ buildGame();
+ SESSION='running'; cdLeft=0;
+ last=performance.now();
+ syncControls();
+ if(!raf)raf=requestAnimationFrame(loop);
+}
+function pauseGame(){
+ if(SESSION!=='running'&&SESSION!=='countdown')return;
+ SESSION='paused'; cdLeft=0; syncControls();
+}
+function resumeGame(){
+ if(SESSION!=='paused')return;
+ SESSION='countdown'; cdLeft=COUNTDOWN;
+ last=performance.now();
+ syncControls();
+}
+function togglePause(){
+ if(SESSION==='running'||SESSION==='countdown')pauseGame();
+ else if(SESSION==='paused')resumeGame();
+}
+
+/* Nút Play/Pause/Restart phản ánh đúng trạng thái */
+function syncControls(){
+ const pp=document.getElementById('btnPlayPause');
+ const rs=document.getElementById('btnRestart');
+ const map={
+  idle:      ['▶ Play',    'btn btn-p', false],
+  running:   ['⏸ Pause',   'btn btn-s', false],
+  paused:    ['▶ Tiếp tục','btn btn-p', false],
+  countdown: ['⏸ Pause',   'btn btn-s', false],
+  over:      ['▶ Chơi lại','btn btn-p', false]
+ }[SESSION];
+ pp.textContent=map[0]; pp.className=map[1];
+ rs.disabled=(SESSION==='idle');
+ rs.style.opacity=rs.disabled?.45:1;
+ rs.style.cursor=rs.disabled?'default':'pointer';
+}
+
+function curSpeed(){
+ let v=speedAt(G.t);
+ if(G.state==='collided')v*=COLLIDE_MULT;
+ if(G.boost>0)v*=BOOST_MULT;
+ return v;
+}
+
+addEventListener('keydown',e=>{
+ if(['ArrowLeft','KeyA'].includes(e.code)){mv(-1);e.preventDefault()}
+ if(['ArrowRight','KeyD'].includes(e.code)){mv(1);e.preventDefault()}
+ if(e.code==='Space'){
+  // Space: chưa chạy thì bắt đầu, hết giờ thì chơi lại, đang chạy thì pause
+  if(SESSION==='idle'||SESSION==='over')startGame();
+  else togglePause();
+  e.preventDefault();
+ }
+ if(e.code==='KeyP'||e.code==='Escape'){togglePause();e.preventDefault()}
+});
+
+cv.addEventListener('pointerdown',e=>{
+ if(SESSION==='idle'||SESSION==='over'){startGame();return}
+ if(SESSION==='paused'){resumeGame();return}
+ if(SESSION==='countdown')return;              // đang đếm ngược thì chưa cho lái
+ const r=cv.getBoundingClientRect();mv((e.clientX-r.left)/r.width<.5?-1:1);
+});
+
+function mv(d){
+ if(!G||SESSION!=='running'||G.state==='slipping')return;
+ G.lane=Math.max(0,Math.min(2,G.lane+d));
+}
+function pop(txt,c){G.pops.push({txt,c,life:1.2})}
+
+document.getElementById('btnPlayPause').onclick=()=>{
+ if(SESSION==='idle'||SESSION==='over')startGame();
+ else togglePause();
+};
+document.getElementById('btnRestart').onclick=()=>startGame();
+
+function loop(now){
+ const dt=Math.min((now-last)/1000,.05);last=now;
+ if(G){
+  if(SESSION==='countdown'){
+   cdLeft-=dt;
+   if(cdLeft<=0){SESSION='running';cdLeft=0;syncControls()}
+  } else if(SESSION==='running'){
+   step(dt);
+  }
+  draw();                                       // luôn vẽ để thấy overlay
+ }
+ raf=requestAnimationFrame(loop);
+}
+function step(dt){
+ if(G.t>=GAME_TIME){if(SESSION==='running'){SESSION='over';syncControls()}return}
+ G.t=Math.min(GAME_TIME,G.t+dt);
+ if(G.t>=GAME_TIME){SESSION='over';syncControls()}
+ if(G.state!=='moving'){G.stTimer-=dt;if(G.stTimer<=0){G.state='moving';G.slipDir=0}}
+ G.boost=Math.max(0,G.boost-dt);
+ const v=curSpeed();
+ G.dist+=v*dt;
+ G.score+=v*dt*(G.boost>0?2:1);
+ G.pops=G.pops.filter(p=>(p.life-=dt)>0);
+ if(G.state==='slipping'){
+  G.x=Math.max(-LANE_W,Math.min(LANE_W,G.x+G.slipDir*LANE_W*dt/SLIP_DUR));
+  G.lane=Math.round(G.x/LANE_W)+1;
+ } else {
+  const tx=LANE_XS[G.lane],d=tx-G.x;
+  G.x+=Math.sign(d)*Math.min(Math.abs(d),LATERAL_V*dt);
+ }
+ for(const o of G.ent){
+  if(o.dead)continue;
+  const dy=o.y-G.dist;
+  if(dy<-6||dy>30)continue;
+  const cfg=(o.t==='booster'||o.t==='gift')?{w:ITEM_W,h:ITEM_H}:OBS_MAP[o.id];
+  if(Math.abs(G.x-o.x)<(CAR_W+cfg.w)/2&&Math.abs(dy)<(CAR_H+cfg.h)/2){
+   o.dead=true;
+   if(o.t==='booster'){G.boost=BOOST_DUR;G.boosts++;G.score+=BOOST_SCORE;pop('⚡ BOOST '+BOOST_DUR+'s','#8B9EFF');continue}
+   if(o.t==='gift'){G.gift=true;G.score+=GIFT_SCORE;pop('🎁 +'+GIFT_SCORE,'#E8A0C8');continue}
+   if(G.boost>0){G.score+=80;pop('+80','#8B9EFF');continue}
+   G.hits++;
+   if(o.id==='oil'){G.state='slipping';G.stTimer=SLIP_DUR;G.slipDir=G.x<0?1:-1;pop('💧 mất lái','#6D5BA6')}
+   else{G.state='collided';G.stTimer=COLLIDE_DUR;pop('💥 '+COLLIDE_DUR+'s '+COLLIDE_MULT+'×','#C0392B')}
+  }
+ }
+}
+function draw(){
+ ctx.clearRect(0,0,CW,CH);
+ ctx.fillStyle='#E6E0F8';ctx.fillRect(0,0,CW,CH);
+ ctx.strokeStyle='rgba(255,255,255,.65)';ctx.lineWidth=2;ctx.setLineDash([22,18]);
+ ctx.lineDashOffset=-(G.dist*PS)%40;
+ for(let l=0;l<2;l++){const lx=(LANE_XS[l]+LANE_W/2+ROAD_W/2)*PS;
+  ctx.beginPath();ctx.moveTo(lx,0);ctx.lineTo(lx,CH);ctx.stroke()}
+ ctx.setLineDash([]);
+
+ const col={oil:'rgba(109,91,166,.85)',fence:'#A66B4A',cone:'#E8A06B',tire:'#5B8FCC'};
+ for(const o of G.ent){
+  if(o.dead)continue;
+  const sy=CARY-(o.y-G.dist)*PS;
+  if(sy<-40||sy>CH+40)continue;
+  const sx=(o.x+ROAD_W/2)*PS;
+  if(o.t==='booster'){
+   ctx.shadowColor='#8B9EFF';ctx.shadowBlur=14;ctx.fillStyle='#8B9EFF';
+   ctx.beginPath();ctx.arc(sx,sy,18,0,7);ctx.fill();ctx.shadowBlur=0;
+   ctx.fillStyle='#fff';ctx.font='700 18px Fredoka';ctx.textAlign='center';ctx.fillText('⚡',sx,sy+6);
+  } else if(o.t==='gift'){
+   ctx.shadowColor='#E8A0C8';ctx.shadowBlur=12;ctx.fillStyle='#E8A0C8';
+   ctx.beginPath();ctx.roundRect(sx-18,sy-18,36,36,7);ctx.fill();ctx.shadowBlur=0;
+   ctx.fillStyle='#fff';ctx.fillRect(sx-2.5,sy-18,5,36);ctx.fillRect(sx-18,sy-2.5,36,5);
+  } else {
+   const c=OBS_MAP[o.id],w=c.w*PS,h=c.h*PS;
+   ctx.fillStyle=col[o.id];
+   if(o.id==='oil'){ctx.beginPath();ctx.ellipse(sx,sy,w/2,h/2,0,0,7);ctx.fill()}
+   else{ctx.beginPath();ctx.roundRect(sx-w/2,sy-h/2,w,h,4);ctx.fill()}
+  }
+ }
+ const cx=(G.x+ROAD_W/2)*PS,cw=CAR_W*PS,ch=CAR_H*PS;
+ ctx.globalAlpha=G.state==='collided'&&Math.floor(G.t*10)%2?.45:1;
+ ctx.fillStyle=G.state==='slipping'?'#C4A484':G.boost>0?'#6B7FE8':G.state==='collided'?'#CC5555':'#8B7BD8';
+ ctx.beginPath();ctx.roundRect(cx-cw/2,CARY-ch/2,cw,ch,9);ctx.fill();
+ ctx.fillStyle='rgba(255,255,255,.75)';
+ ctx.beginPath();ctx.roundRect(cx-cw/4,CARY-ch/3.2,cw/2,ch/4,4);ctx.fill();
+ ctx.globalAlpha=1;
+ ctx.textAlign='center';ctx.font='600 13px Be Vietnam Pro';
+ G.pops.forEach((p,i)=>{ctx.globalAlpha=Math.min(1,p.life);ctx.fillStyle=p.c;
+  ctx.fillText(p.txt,CW/2,CARY-60-(1.2-p.life)*26-i*18)});
+ ctx.globalAlpha=1;
+ ctx.fillStyle='rgba(91,75,158,.2)';ctx.fillRect(0,0,CW,4);
+ ctx.fillStyle='#8B7BD8';ctx.fillRect(0,0,CW*G.t/GAME_TIME,4);
+ ctx.fillStyle='rgba(91,75,158,.72)';ctx.beginPath();ctx.roundRect(8,10,150,46,8);ctx.fill();
+ ctx.fillStyle='#fff';ctx.textAlign='left';ctx.font='600 18px Fredoka';
+ ctx.fillText(Math.round(G.score),16,34);
+ ctx.font='500 10px Be Vietnam Pro';
+ ctx.fillText(`${Math.round(G.dist)}m · ${(GAME_TIME-G.t).toFixed(1)}s · ${G.state}`,16,48);
+ if(G.boost>0){ctx.fillStyle='#8B9EFF';ctx.textAlign='right';ctx.font='600 14px Fredoka';
+  ctx.fillText('⚡'+G.boost.toFixed(1)+'s',CW-14,32)}
+
+ document.getElementById('hScore').textContent=Math.round(G.score);
+ document.getElementById('hDist').textContent=Math.round(G.dist)+'m';
+ document.getElementById('hTime').textContent=(GAME_TIME-G.t).toFixed(1);
+ document.getElementById('hSpd').textContent=curSpeed().toFixed(1);
+ document.getElementById('hBoost').textContent=G.boosts+'/'+N_BOOST;
+ document.getElementById('hHits').textContent=G.hits;
+
+ /* badge: trạng thái phiên khi không chạy, phase khi đang chạy */
+ const lbl=SESSION==='idle'?'chưa chạy'
+   :SESSION==='paused'?'⏸ tạm dừng'
+   :SESSION==='countdown'?'⏱ '+Math.ceil(cdLeft)
+   :SESSION==='over'?'hết giờ'
+   :(G.t<10?'P1 Warmup':G.t<30?'P2 Cruise':'P3 Intense');
+ const pb=document.getElementById('phaseNow');
+ if(pb.textContent!==lbl)pb.textContent=lbl;
+ const cls='badge '+(SESSION==='paused'||SESSION==='countdown'?'b-err':'b-i');
+ if(pb.className!==cls)pb.className=cls;
+
+ /* tracker item: ăn được / sắp tới / đã bỏ lỡ */
+ const tr=MAP.items.map(it=>{
+  const ent=G.ent.find(e=>(e.t===it.type)&&Math.abs(e.y-it.dist)<1);
+  const got=ent?ent.dead:false;
+  const passed=G.dist>it.dist+6;
+  const near=!got&&!passed&&(it.dist-G.dist)<160;
+  const cls=got?'got':passed?'miss':near?'near':'';
+  const ico=it.type==='booster'?'⚡':'🎁';
+  return `<div class="it ${cls}"><span class="ico">${ico}</span>
+   <span>${'LCR'[it.lane]}</span>
+   <span class="at">${it.dist|0}m</span></div>`;
+ }).join('');
+ const trk=document.getElementById('itemTrack');
+ if(trk._last!==tr){trk.innerHTML=tr;trk._last=tr}
+
+ drawOverlay();
+}
+
+/* Overlay theo trạng thái phiên chơi */
+function drawOverlay(){
+ if(SESSION==='running')return;
+ ctx.textAlign='center';
+
+ if(SESSION==='idle'){
+  ctx.fillStyle='rgba(46,42,69,.78)';ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#fff';ctx.font='600 26px Fredoka';
+  ctx.fillText('Play test',CW/2,CH/2-40);
+  ctx.font='400 12.5px Be Vietnam Pro';ctx.fillStyle='#C9BFEB';
+  ctx.fillText(`Map ${MAP.sel.P1}-${MAP.sel.P2}-${MAP.sel.P3} · ${MAP.segs.length} segment · ${MAP.segs.length*SEG_H}m`,CW/2,CH/2-14);
+  ctx.fillText(`${MAP.items.length} item · ${GAME_TIME}s`,CW/2,CH/2+4);
+  /* nút Play vẽ trên canvas cho dễ bấm */
+  const bw=150,bh=42,bx=CW/2-bw/2,by=CH/2+28;
+  ctx.fillStyle='#8B7BD8';ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='600 16px Fredoka';
+  ctx.fillText('▶  Play',CW/2,by+27);
+  ctx.font='400 11px Be Vietnam Pro';ctx.fillStyle='#9A93B8';
+  ctx.fillText('hoặc bấm Space',CW/2,by+bh+20);
+  return;
+ }
+
+ if(SESSION==='paused'){
+  ctx.fillStyle='rgba(46,42,69,.72)';ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#fff';ctx.font='600 24px Fredoka';
+  ctx.fillText('Tạm dừng',CW/2,CH/2-26);
+  ctx.font='400 12.5px Be Vietnam Pro';ctx.fillStyle='#C9BFEB';
+  ctx.fillText(`${Math.round(G.score)} điểm · ${Math.round(G.dist)}m · còn ${(GAME_TIME-G.t).toFixed(1)}s`,CW/2,CH/2);
+  const bw=170,bh=40,bx=CW/2-bw/2,by=CH/2+22;
+  ctx.fillStyle='#8B7BD8';ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='600 15px Fredoka';
+  ctx.fillText('▶  Tiếp tục',CW/2,by+26);
+  ctx.font='400 11px Be Vietnam Pro';ctx.fillStyle='#9A93B8';
+  ctx.fillText(`sẽ đếm ngược ${COUNTDOWN}s trước khi chạy lại`,CW/2,by+bh+20);
+  return;
+ }
+
+ if(SESSION==='countdown'){
+  /* mờ nhẹ để vẫn thấy map phía trước, kèm số đếm lớn */
+  ctx.fillStyle='rgba(46,42,69,.34)';ctx.fillRect(0,0,CW,CH);
+  const n=Math.ceil(cdLeft);
+  const frac=1-(cdLeft-Math.floor(cdLeft));     // 0→1 trong mỗi giây
+  /* vòng tròn thu nhỏ theo tiến độ giây hiện tại */
+  ctx.save();
+  ctx.translate(CW/2,CH/2-10);
+  const r=54;
+  ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=5;
+  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#8B9EFF';ctx.lineWidth=5;ctx.lineCap='round';
+  ctx.beginPath();ctx.arc(0,0,r,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-frac));ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='600 '+(46+8*(1-frac))+'px Fredoka';ctx.textAlign='center';
+  ctx.fillText(String(n),0,17);
+  ctx.restore();
+  ctx.fillStyle='#fff';ctx.font='500 13px Be Vietnam Pro';
+  ctx.fillText('Chuẩn bị…',CW/2,CH/2+72);
+  return;
+ }
+
+ if(SESSION==='over'){
+  ctx.fillStyle='rgba(46,42,69,.84)';ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#8C85AC';ctx.font='600 12px Be Vietnam Pro';
+  ctx.fillText('HẾT 60 GIÂY',CW/2,CH/2-58);
+  ctx.fillStyle='#fff';ctx.font='600 30px Fredoka';
+  ctx.fillText(Math.round(G.score)+' điểm',CW/2,CH/2-24);
+  ctx.font='400 13px Be Vietnam Pro';ctx.fillStyle='#C9BFEB';
+  ctx.fillText(`${Math.round(G.dist)}m · ${G.hits} va chạm · ${G.boosts}/${N_BOOST} boost${G.gift?' · 🎁 quà':''}`,CW/2,CH/2+4);
+  ctx.fillStyle='#9A93B8';ctx.font='400 12px Be Vietnam Pro';
+  ctx.fillText(`Map ${MAP.sel.P1}-${MAP.sel.P2}-${MAP.sel.P3}`,CW/2,CH/2+26);
+  const bw=160,bh=40,bx=CW/2-bw/2,by=CH/2+44;
+  ctx.fillStyle='#8B7BD8';ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='600 15px Fredoka';
+  ctx.fillText('▶  Chơi lại',CW/2,by+26);
+ }
+}
+
+/* ================= CONTROLS ================= */
+for(const [id,key] of [['s1','P1'],['s2','P2'],['s3','P3']]){
+ const el=document.getElementById(id);
+ for(const k of ['A','B','C']){
+  const b=document.createElement('button');
+  b.textContent=k;b.dataset.k=k;b.dataset.p=key;
+  b.onclick=()=>{SEL[key]=k;refresh()};
+  el.appendChild(b);
+ }
+}
+document.getElementById('testAll').onclick=()=>{
+ const sb=document.getElementById('sbadge');
+ sb.style.display='inline-flex';
+ sb.className='badge b-i';sb.textContent='đang chạy…';
+ setTimeout(()=>{
+  const lint=lintLibrary();
+  if(lint.length){
+   sb.className='badge b-err';
+   sb.textContent='Lint: '+lint[0];
+   console.warn('Lint errors:',lint);
+   return;
+  }
+  const res=testAllCombos();
+  const bad=res.filter(r=>!r.pass);
+  sb.className='badge '+(bad.length?'b-err':'b-ok');
+  sb.textContent=bad.length
+   ? `${res.length-bad.length}/27 · ${bad[0].combo}: ${bad[0].failed[0]}`
+   : `✓ lint OK · 27/27 tổ hợp`;
+  if(bad.length)console.warn('Failing combos:',bad);
+ },10);
+};
+
+/* ================= TABS ================= */
+document.getElementById('tabs').addEventListener('click',e=>{
+ const b=e.target.closest('button[data-tab]');
+ if(!b)return;
+ document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+ document.querySelectorAll('.tabpane').forEach(p=>
+  p.classList.toggle('on',p.dataset.pane===b.dataset.tab));
+});
+
+/* ================= FILTER TABLE ================= */
+/* Lọc theo text trên toàn bộ dòng. Giữ nguyên <tr> đầu (header). */
+function wireFilter(inputId,tableId,countId){
+ const inp=document.getElementById(inputId);
+ const tbl=document.getElementById(tableId);
+ if(!inp||!tbl)return;
+ const apply=()=>{
+  const q=(inp.value||'').trim().toLowerCase();
+  const rows=Array.from(tbl.rows).slice(1);   // bỏ dòng header
+  let shown=0;
+  rows.forEach(r=>{
+   const hit=!q||(r.textContent||'').toLowerCase().includes(q);
+   r.classList.toggle('hide',!hit);
+   if(hit)shown++;
+  });
+  const c=document.getElementById(countId);
+  if(c)c.textContent=q?`${shown}/${rows.length}`:`${rows.length} dòng`;
+ };
+ inp.addEventListener('input',apply);
+ inp._apply=apply;
+ return apply;
+}
+function refreshFilters(){
+ ['fObs','fSpawn','fPool'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el&&el._apply)el._apply();
+ });
+}
+
+/* ================= SUMMARY STRIP ================= */
+function renderStrip(){
+ const segs=MAP.segs;
+ const obs=segs.reduce((a,s)=>a+s.obstacles.filter(o=>o.t!=='booster'&&o.t!=='gift').length,0);
+ const oil=segs.filter(s=>s.obstacles.some(o=>o.t==='oil')).length;
+ const breath=segs.filter(s=>!s.obstacles.length).length;
+ const v=validate(MAP), nBad=v.filter(x=>!x[0]).length;
+ const rows=rowsOf(segs).filter(r=>r.lanes.length).length;
+ const gift=MAP.items.find(i=>i.type==='gift');
+ const giftPct=gift?Math.round((gift.time-10)/20*100):0;
+ document.getElementById('mapStrip').innerHTML=`
+ <div class="stat ${nBad?'err':'ok'}"><label>Validator</label>
+   <div class="v">${nBad?nBad+' lỗi':'✓ '+v.length+'/'+v.length}</div></div>
+ <div class="stat"><label>Segment</label><div class="v">${segs.length}<small> · ${segs.length*SEG_H}m</small></div></div>
+ <div class="stat"><label>Obstacle</label><div class="v">${obs}<small> · ${rows} hàng</small></div></div>
+ <div class="stat"><label>Oil / Breath</label><div class="v">${oil}<small> · ${breath} nghỉ</small></div></div>
+ <div class="stat"><label>Quà</label><div class="v">${gift?(gift.dist|0):'—'}<small>m · ${giftPct}% P2</small></div></div>`;
+ document.getElementById('tnMap').textContent=segs.length+' seg';
+ document.getElementById('mValid').textContent=nBad?nBad+' lỗi cần sửa':'toàn bộ '+v.length+' rule đạt';
+ document.getElementById('mItem').textContent=MAP.items.length+' item · world Y + X để spawn';
+ document.getElementById('mSpawn').textContent=segs.length+' segment';
+}
+
+/* ================= UNITY PATTERN EXPORT PANEL ================= */
+let OIL_MODE='A';   // 'A' = giữ oil mọi tier (sửa slip) · 'B' = oil chỉ ở đầu game
+const curTiers=()=>OIL_MODE==='B'?UP.tiersOilEarly(UP.POOL):UP.buildTiers(UP.POOL);
+
+function renderPoolRules(){
+ const dt16=(UP.ROW_GAP/UP.V_MAX).toFixed(2), dt32=(32/UP.V_MAX).toFixed(2);
+ document.getElementById('poolRules').innerHTML=
+ `<b style="color:#5B4B9E">Lattice</b> · vật cản chỉ ở local y = −8 / +8 ⇒ hàng cách nhau bội số ${UP.ROW_GAP}m, kể cả khi vắt qua ranh giới segment.<br>
+  <b style="color:#5B4B9E">Ngân sách thời gian</b> · đổi 1 làn = ${LANE_W}/${LATERAL_V} = ${LANE_TIME.toFixed(2)}s · ${UP.ROW_GAP}m @${UP.V_MAX}m/s = ${dt16}s (1 làn) · 32m = ${dt32}s (2 làn)<br>
+  <b>R1</b> không hàng nào bịt cả 3 làn<br>
+  <b>R2</b> hàng y=+8 không được chỉ mở một làn biên — nếu không sẽ có cặp mở{L}→mở{R} cách ${UP.ROW_GAP}m cần 2 làn<br>
+  <b>R3</b> hai hàng trong cùng pattern lệch tối đa 1 làn<br>
+  <b>R4</b> oil đứng một mình trong segment (y=+8 trống) ⇒ runway ${UP.OIL_RUNWAY}m`;
+}
+
+function renderTierTable(){
+ const tiers=curTiers();
+ let h='<tr><th>Tier</th><th>Nhóm</th><th>Pattern</th><th>Max obs</th><th>Speed</th><th>React/16m</th><th>Oil</th></tr>';
+ tiers.forEach(t=>{
+  const mx=Math.max(0,...t.patterns.map(p=>(p.r1?p.r1.block.length:0)+(p.r2?p.r2.block.length:0)));
+  const v=speedAt(t.activeTime), react=UP.ROW_GAP/v;
+  const nOil=t.patterns.filter(p=>(p.r1&&p.r1.oil)||(p.r2&&p.r2.oil)).length;
+  const tight=react<LANE_TIME*1.15;
+  h+=`<tr><td><b>≥${t.activeTime}s</b></td><td style="font-size:9px">${t.label}</td>
+  <td>${t.patterns.length}</td><td>${mx}</td><td>${v.toFixed(0)}</td>
+  <td class="mono" style="color:${tight?'#C0392B':'#2E9070'}">${react.toFixed(2)}s</td>
+  <td>${nOil?nOil:'—'}</td></tr>`;
+ });
+ document.getElementById('tierTable').innerHTML=h;
+}
+
+/* Sơ đồ mini 3 làn × 2 hàng. Hàng trên = y+8 (xe gặp sau),
+   hàng dưới = y−8 (xe gặp trước, vì xe chạy theo +Y). */
+function patternGrid(p){
+ let h='<span class="pgrid">';
+ [[p.r2,8],[p.r1,-8]].forEach(pair=>{
+  const r=pair[0];
+  h+='<span class="prow">';
+  for(let l=0;l<3;l++){
+   let cls='pc',txt='·';
+   if(r){
+    const hit=r.block.indexOf(l)>=0;
+    if(hit){
+     if(r.oil){cls+=' oil';txt='O'}
+     else{cls+=' blk';txt='■'}
+    }
+   }
+   h+=`<span class="${cls}">${txt}</span>`;
+  }
+  h+='</span>';
+ });
+ return h+'</span>';
+}
+
+/* Danh sách toạ độ đúng như trong road_path_patterns.json */
+function patternCoords(p){
+ const out=[];
+ [[p.r1,-8],[p.r2,8]].forEach(pair=>{
+  const r=pair[0],y=pair[1];
+  if(!r)return;
+  r.block.slice().sort((a,b)=>a-b).forEach(l=>{
+   out.push({type:r.oil?'oil':'normal',x:LANE_XS[l],y});
+  });
+ });
+ out.sort((a,b)=>a.y!==b.y?a.y-b.y:a.x-b.x);   // khớp thứ tự Unity sort
+ return out;
+}
+
+function renderPoolTable(){
+ const tiers=curTiers();
+ const poolNames=new Set(UP.POOL.map(p=>p.name));
+ const active=new Set();
+ // tier 0 có pattern 'grace' (segment trống) không thuộc POOL nên bỏ khi đếm
+ tiers.forEach(t=>t.patterns.forEach(p=>{if(poolNames.has(p.name))active.add(p.name)}));
+ let h='<tr><th>Pattern</th><th>Tier</th><th>Sơ đồ<br><span style="font-weight:400;text-transform:none">L C R</span></th><th>Toạ độ (x, y) — nhập Unity</th><th>Đọc</th></tr>';
+ UP.POOL.forEach(p=>{
+  const on=active.has(p.name);
+  const co=patternCoords(p);
+  const coStr=co.length
+   ? co.map(o=>`<span class="coord${o.type==='oil'?' oil':''}">${o.x>0?'+':''}${o.x}, ${o.y>0?'+':''}${o.y}${o.type==='oil'?' oil':''}</span>`).join(' ')
+   : '<span style="color:#AAA">trống</span>';
+  h+=`<tr style="opacity:${on?1:.4}">
+  <td style="font-size:9px">${p.name}${on?'':'<br><span style="color:#C0392B">tắt ở mode B</span>'}</td>
+  <td>≥${p.tier}s</td>
+  <td>${patternGrid(p)}</td>
+  <td>${coStr}</td>
+  <td style="font-size:9px;color:#7C74A0">${UP.rowLabel(p.r1)}${p.r2?' → '+UP.rowLabel(p.r2):''}</td></tr>`;
+ });
+ document.getElementById('poolTable').innerHTML=h;
+ const totalObs=UP.POOL.reduce((s,p)=>s+patternCoords(p).length,0);
+ document.getElementById('poolCount').textContent=
+  `${active.size}/${UP.POOL.length} pattern bật · ${totalObs} obstacle`;
+ document.getElementById('tnUnity').textContent=active.size;
+}
+
+/* Bảng vị trí obstacle của map đang chọn, theo world Y — dùng để nhập fixed map */
+function renderObstacleTable(){
+ const rows=[];
+ MAP.segs.forEach(s=>{
+  s.obstacles.forEach(o=>{
+   rows.push({
+    seg:s.idx, phase:s.phase,
+    worldY:s.dist+SEG_H/2+o.y,
+    localY:o.y, x:o.x, lane:UP.LANE_NAME[o.lane],
+    id:o.id, t:o.t,
+    time:timeAtDist(s.dist+SEG_H/2+o.y)
+   });
+  });
+ });
+ rows.sort((a,b)=>a.worldY-b.worldY||a.x-b.x);
+ let h='<tr><th>Seg</th><th>Ph</th><th>World Y</th><th>Local Y</th><th>X</th><th>Lane</th><th>Obstacle</th><th>t</th></tr>';
+ rows.forEach(r=>{
+  const isItem=r.t==='booster'||r.t==='gift';
+  const nm=r.t==='booster'?'⚡ booster':r.t==='gift'?'🎁 gift':r.id;
+  h+=`<tr${isItem?' style="background:rgba(139,158,255,.10)"':''}>
+  <td>${r.seg}</td><td style="font-size:9px">${r.phase}</td>
+  <td class="mono"><b>${r.worldY}</b></td>
+  <td class="mono">${r.localY>0?'+':''}${r.localY}</td>
+  <td class="mono">${r.x>0?'+':''}${r.x}</td>
+  <td>${r.lane}</td>
+  <td style="font-size:9px${r.t==='oil'?';color:#5B3FA6;font-weight:600':''}">${nm}</td>
+  <td>${r.time.toFixed(1)}s</td></tr>`;
+ });
+ document.getElementById('obstacleTable').innerHTML=h;
+ document.getElementById('obsCount').textContent=
+  `${rows.length} obstacle trên ${MAP.segs.length*SEG_H}m`;
+}
+
+function renderOilNote(){
+ const el=document.getElementById('oilNote');
+ if(!UP.OIL_CONFLICT){el.innerHTML='';return}
+ el.innerHTML=`<div class="warn">
+ <b>Xung đột runway oil.</b> Oil gây slipping ${SLIP_DUR}s, nhưng runway tối đa một pattern
+ tự đảm bảo được chỉ là ${UP.OIL_RUNWAY}m (oil ở y=−8, y=+8 trống). Ở ${UP.V_MAX} m/s đó là
+ ${UP.SLIP_MAX_SAFE.toFixed(2)}s &lt; ${SLIP_DUR}s. Không thể chừa thêm vì pattern kế tiếp do Unity
+ bốc độc lập — đây là giới hạn kiến trúc, không phải lỗi soạn pattern.
+ <div class="opt"><input type="radio" name="oilmode" id="oilA" ${OIL_MODE==='A'?'checked':''}>
+ <label for="oilA"><b>A</b> · Giữ oil mọi tier, đặt <span class="mono">carState.slipping.activeDuration = ${UP.SLIP_MAX_SAFE.toFixed(2)}</span> trong init_data.json</label></div>
+ <div class="opt"><input type="radio" name="oilmode" id="oilB" ${OIL_MODE==='B'?'checked':''}>
+ <label for="oilB"><b>B</b> · Giữ slipping ${SLIP_DUR}s, oil chỉ ở tier có speed ≤ ${UP.OIL_SAFE_SPEED.toFixed(0)} m/s (activeTime &lt; ${UP.OIL_SAFE_TIME.toFixed(0)}s)</label></div>
+ </div>`;
+ // radio được sinh động ở trên nên chỉ gắn handler sau khi innerHTML đã đặt
+ const a=document.getElementById('oilA'),b=document.getElementById('oilB');
+ if(a)a.onchange=()=>{OIL_MODE='A';renderUnityPanel()};
+ if(b)b.onchange=()=>{OIL_MODE='B';renderUnityPanel()};
+}
+
+function currentJson(){
+ const j=UP.toUnityJson(curTiers());
+ j._designNote=OIL_MODE==='A'
+  ? `Lattice: local y = -8 / +8, hàng cách nhau bội số 16m. Oil đứng một mình ở y=-8 => runway 32m. PHƯƠNG ÁN A: đặt carState.slipping.activeDuration = ${UP.SLIP_MAX_SAFE.toFixed(2)} để runway đủ ở tốc độ tối đa ${UP.V_MAX} m/s.`
+  : `PHƯƠNG ÁN B: giữ slipping = ${SLIP_DUR}s. Oil chỉ ở tier có speed <= ${UP.OIL_SAFE_SPEED.toFixed(0)} m/s (activeTime < ${UP.OIL_SAFE_TIME.toFixed(0)}s).`;
+ return j;
+}
+
+function renderJsonPreview(){
+ const j=currentJson();
+ const txt=JSON.stringify(j,null,2);
+ document.getElementById('jsonPreview').textContent=txt;
+ const entries=j.roadPathPatternInfos.reduce((s,t)=>s+t.patterns.length,0);
+ document.getElementById('mJson').textContent=
+  `${j.roadPathPatternInfos.length} tier · ${entries} entry · ${(txt.length/1024).toFixed(1)} KB`;
+}
+
+function renderUnityPanel(){
+ renderPoolRules();renderTierTable();renderPoolTable();renderObstacleTable();
+ renderOilNote();renderJsonPreview();
+ // lint chạy luôn để badge phản ánh trạng thái hiện tại
+ const pe=UP.lintPool(UP.POOL), ae=UP.lintAdjacency(UP.POOL);
+ const pb=document.getElementById('poolBadge');
+ const bad=pe.length+ae.length;
+ pb.className='badge '+(bad?'b-err':'b-ok');
+ pb.textContent=bad?`${bad} lỗi pool`:`✓ ${UP.POOL.length} pattern · ${ae.pairs} cặp OK`;
+}
+
+document.getElementById('btnLintPool').onclick=()=>{
+ const pe=UP.lintPool(UP.POOL), ae=UP.lintAdjacency(UP.POOL);
+ const pb=document.getElementById('poolBadge');
+ const all=pe.concat(ae);
+ pb.className='badge '+(all.length?'b-err':'b-ok');
+ pb.textContent=all.length
+  ? `${all.length} lỗi · ${all[0]}`
+  : `✓ pool ${UP.POOL.length} pattern · ${ae.pairs} cặp kề nhau đều né được @${UP.V_MAX}m/s`;
+ if(all.length)console.warn('Pool lint:',all);
+};
+
+document.getElementById('btnStress').onclick=()=>{
+ const sb=document.getElementById('stressBadge');
+ sb.style.display='inline-flex';
+ sb.className='badge b-i';sb.textContent='đang chạy…';
+ setTimeout(()=>{
+  const r=UP.stressTest(curTiers(),500,OIL_MODE==='B');
+  sb.className='badge '+(r.fail?'b-err':'b-ok');
+  sb.textContent=r.fail
+   ? `${r.pass}/${r.runs} pass · ${r.sample.errs[0]}`
+   : `✓ ${r.pass}/${r.runs} seed · ${r.avgRows} hàng/lần · streak tối đa ${r.worstStreak}`;
+  if(r.fail)console.warn('Stress sample:',r.sample);
+ },10);
+};
+
+document.getElementById('btnCopyJson').onclick=async()=>{
+ const btn=document.getElementById('btnCopyJson'),old=btn.textContent;
+ try{
+  await navigator.clipboard.writeText(JSON.stringify(currentJson(),null,2));
+  btn.textContent='✓ Đã copy';
+ }catch(e){btn.textContent='✗ Không copy được'}
+ setTimeout(()=>btn.textContent=old,1400);
+};
+
+document.getElementById('btnDownJson').onclick=()=>{
+ const blob=new Blob([JSON.stringify(currentJson(),null,2)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='road_path_patterns.json';a.click();
+ URL.revokeObjectURL(a.href);
+};
+
+function refresh(){
+ document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',SEL[b.dataset.p]===b.dataset.k));
+ MAP=buildMap(SEL);
+ document.getElementById('comboLbl').textContent=`${SEL.P1}-${SEL.P2}-${SEL.P3}`;
+ renderParams();renderPhaseTable();renderSpeedTable();renderVariantInfo();
+ renderItemTable();renderSpawnTable();renderMap();renderUnityPanel();
+ const v=validate(MAP),f=v.filter(x=>!x[0]).length;
+ const vb=document.getElementById('vbadge');
+ vb.className='badge '+(f?'b-err':'b-ok');
+ vb.textContent=f?`${f} lỗi`:`✓ ${v.length}/${v.length}`;
+ renderChecks(v);
+ renderStrip();
+ refreshFilters();
+ resetGame();
+}
+
+wireFilter('fObs','obstacleTable','cObs');
+wireFilter('fSpawn','spawnTable','cSpawn');
+wireFilter('fPool','poolTable','cPool');
+refresh();
+</script>

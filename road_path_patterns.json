@@ -1,0 +1,2273 @@
+{
+  "roadPathPatternInfos": [
+    {
+      "activeTime": 0,
+      "patterns": [
+        {
+          "patternName": "grace",
+          "obstacles": []
+        }
+      ]
+    },
+    {
+      "activeTime": 3,
+      "patterns": [
+        {
+          "patternName": "P1_single_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "activeTime": 10,
+      "patterns": [
+        {
+          "patternName": "P1_single_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_L_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_C_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_R_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "activeTime": 20,
+      "patterns": [
+        {
+          "patternName": "P1_single_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_L_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_C_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_R_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_L",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_C",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_R",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "activeTime": 30,
+      "patterns": [
+        {
+          "patternName": "P1_single_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_L_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_C_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_R_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_L",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_C",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_R",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateL_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateL_then_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateR_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateR_then_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateL_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateR_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateC_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "activeTime": 45,
+      "patterns": [
+        {
+          "patternName": "P1_single_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_single_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_LR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_CR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P1_weave_RL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openL",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gate_openR",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_gateC_then_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_L_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_C_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_R_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_L",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_C",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P2_oil_R",
+          "obstacles": [
+            {
+              "obstacleType": "oil",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateL_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateL_then_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateR_then_C",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateR_then_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateL_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateR_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_gateC_then_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_peak_gateC_L",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_peak_gateC_R",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_peak_gateL_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        },
+        {
+          "patternName": "P3_peak_gateR_gateC",
+          "obstacles": [
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 0,
+                "y": -8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": -3.5,
+                "y": 8
+              }
+            },
+            {
+              "obstacleType": "normal",
+              "position": {
+                "x": 3.5,
+                "y": 8
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "_designNote": "Lattice: obstacle chỉ ở local y = -8 / +8 nên hàng luôn cách nhau bội số 16m. Oil đứng một mình (y=+8 trống) => runway 32m. YÊU CẦU: đặt carState.slipping.activeDuration = 0.64 trong init_data.json để runway đủ ở tốc độ tối đa 50 m/s."
+}

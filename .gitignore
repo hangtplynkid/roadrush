@@ -1,0 +1,7 @@
+# backup do export_unity.js tự tạo mỗi lần ghi
+*.bak
+
+# file tạm khi debug
+_*.js
+
+node_modules/

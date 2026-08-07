@@ -1,0 +1,577 @@
+{
+  "data": {
+    "customer": {
+      "phone": "+84972684199",
+      "currentLives": 5,
+      "isActive": true
+    },
+    "gameConfig": {
+      "startDate": "2026-07-01T01:57:00.000Z",
+      "endDate": "2026-12-31T00:00:00.000Z",
+      "version": "1.0",
+      "description": "An awesome new game based on the Road Rush template. 1",
+      "rules": "",
+      "rulesFormatted": "",
+      "prizesScheme": "",
+      "missionDetails": "https://example.com/quests",
+      "tnc": "https://www.canva.com/design/DAGfKh5yBY8/QQBp3wTxs8mkZiMzWh_SbA/edit"
+    },
+    "gamePlayConfig": {
+      "gameTime": 60,
+      "speedLevels": [
+        {
+          "speed": 20,
+          "activeTime": 0
+        },
+        {
+          "speed": 30,
+          "activeTime": 10
+        },
+        {
+          "speed": 40,
+          "activeTime": 30
+        },
+        {
+          "speed": 50,
+          "activeTime": 60
+        }
+      ],
+      "roadPathPatternInfos": [
+        {
+          "activeTime": 0.0,
+          "patterns": [
+            {
+              "patternName": "RoadPathVariant_lvl_0_0",
+              "obstacles": []
+            }
+          ]
+        },
+        {
+          "activeTime": 5.0,
+          "patterns": [
+            {
+              "patternName": "RoadPathVariant_lvl_5_0",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": -6.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_1",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": -6.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_2",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 12.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_3",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 12.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_4",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_5",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 0.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_6",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 0.0
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "activeTime": 10.0,
+          "patterns": [
+            {
+              "patternName": "RoadPathVariant_lvl_5_0",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": -6.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_1",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": -6.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_2",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 12.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_3",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 12.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_4",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_5",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 0.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_5_6",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 0.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_10_0",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": -9.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 9.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_10_1",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": -9.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 9.0
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "activeTime": 15.0,
+          "patterns": [
+            {
+              "patternName": "RoadPathVariant_lvl_15_0",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 6.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_1",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": -6.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_2",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": -6.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_3",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": -4.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_4",
+              "obstacles": [
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": -4.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 6.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_5",
+              "obstacles": [
+                {
+                  "obstacleType": "oil",
+                  "position": {
+                    "x": 0.0,
+                    "y": -10.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 10.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_6",
+              "obstacles": [
+                {
+                  "obstacleType": "oil",
+                  "position": {
+                    "x": 0.0,
+                    "y": -10.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 10.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_7",
+              "obstacles": [
+                {
+                  "obstacleType": "oil",
+                  "position": {
+                    "x": -3.5,
+                    "y": -10.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 3.5,
+                    "y": 10.0
+                  }
+                }
+              ]
+            },
+            {
+              "patternName": "RoadPathVariant_lvl_15_8",
+              "obstacles": [
+                {
+                  "obstacleType": "oil",
+                  "position": {
+                    "x": 3.5,
+                    "y": -10.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                },
+                {
+                  "obstacleType": "normal",
+                  "position": {
+                    "x": -3.5,
+                    "y": 10.0
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "obstacles": [
+        {
+          "obstacleId": "cone",
+          "activeTime": 5
+        },
+        {
+          "obstacleId": "fence",
+          "activeTime": 5
+        },
+        {
+          "obstacleId": "oil",
+          "activeTime": 15
+        },
+        {
+          "obstacleId": "tire",
+          "activeTime": 5
+        }
+      ],
+      "carState": [
+        {
+          "stateId": "moving",
+          "activeDuration": -1,
+          "speedMultiplier": 1
+        },
+        {
+          "stateId": "slipping",
+          "activeDuration": 1,
+          "speedMultiplier": 1
+        },
+        {
+          "stateId": "collided",
+          "activeDuration": 2.5,
+          "speedMultiplier": 0.25
+        }
+      ]
+    }
+  }
+}
