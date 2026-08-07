@@ -50,7 +50,12 @@
   const LATERAL_V = 14;                        // m/s dịch ngang
   const CAR_LIMIT_X = 5.25;                    // biên đường (app.ts CarLimitX)
   const LANE_TIME = LANE_W / LATERAL_V;        // 0.25s
-  const REACT_MARGIN = 1.15;                   // hệ số an toàn cho hàng gần nhất
+  /* Hệ số an toàn cho hàng gần nhất.
+       1.15 → đòi 0.29s, cho slack chỉ 0.07s ở 50 m/s = 4 frame @60fps, quá gắt.
+       1.60 → đòi 0.40s, buộc MỌI hàng ở P3 cách 32m, làm mật độ P3 tụt dưới P2.
+       1.40 → đòi 0.35s: hàng 16m dùng được tới ~45 m/s, sau đó phải giãn 32m.
+              Cho slack ~0.11s (7 frame) ở chỗ chặt nhất. */
+  const REACT_MARGIN = 1.4;
 
   const SLIP_DUR = 1.0, COLLIDE_DUR = 2.5, COLLIDE_MULT = 0.25;
   const BOOST_DUR = 5.0, BOOST_MULT = 1.35, BOOST_SCORE = 150, GIFT_SCORE = 600;
@@ -131,7 +136,8 @@
     ? { r1: null, r2: { block: [l] }, tag: 'single' }
     : { r1: { block: [l] }, r2: null, tag: 'single' }];
 
-  /** weave: 2 vật cản đơn ở 2 hàng cách 16m. Mỗi hàng còn 2 làn mở -> an toàn. */
+  /** weave: 2 vật cản đơn ở 2 hàng cách 16m. Mỗi hàng còn 2 làn mở -> an toàn.
+      Ở vùng tốc độ cao, compiler tự giãn khối này thành 32m (xem `widen`). */
   const wv = (a, b) => [{ r1: { block: [a] }, r2: { block: [b] }, tag: 'weave' }];
 
   /** gate: chặn 2 làn, chỉ mở `open`. LUÔN row1 + row2 trống => hàng sau cách 32m. */
@@ -177,6 +183,37 @@
 
   const seq = (...xs) => [].concat.apply([], xs);
 
+  /* ------------------------------------------------- AUTO-WIDEN (theo tốc độ)
+     Tốc độ tối đa mà hai hàng cách ROW_GAP vẫn đủ REACT_MARGIN:
+       16 / (0.25 × 1.4) = 45.7 m/s  ⇒  từ khoảng giây 47 trở đi (P3 nửa sau)
+     mọi hàng có vật cản BẮT BUỘC phải cách 32m.
+     Thay vì bắt designer nhớ ngưỡng này và tự chọn khối "giãn", compiler tự tách
+     segment có cả hai hàng đặc thành 2 segment khi segment đó nằm ở vùng tốc độ
+     cao. Designer chỉ viết nhịp mong muốn (wv, gt, oil…) cho cả 3 phase.        */
+  const SAFE_ROW_SPEED = ROW_GAP / (LANE_TIME * REACT_MARGIN);
+
+  /* hàng "đặc" = có vật cản chặn (block hoặc oil). Hàng chỉ chứa item không tính. */
+  const isSolidRow = r => !!r && !r.item;
+
+  /* tốc độ tại hàng r2 của segment toàn cục thứ gi */
+  const speedAtSeg = gi => speedAt(timeAtDist(gi * SEG_H + SEG_H / 2 + ROW_LOCAL_Y[2]));
+
+  function widenBlock(blk, startSeg) {
+    const out = [];
+    let gi = startSeg;
+    blk.forEach(seg => {
+      if (isSolidRow(seg.r1) && isSolidRow(seg.r2) && speedAtSeg(gi) > SAFE_ROW_SPEED) {
+        out.push({ r1: seg.r1, r2: null, tag: (seg.tag || 'seg') + '-wide' });
+        out.push({ r1: seg.r2, r2: null, tag: (seg.tag || 'seg') + '-wide' });
+        gi += 2;
+      } else {
+        out.push(seg);
+        gi += 1;
+      }
+    });
+    return out;
+  }
+
   /* ------------------------------------------------- COMPILE (auto-fix pass)
      Người thiết kế chỉ cần viết trật tự khối mong muốn (beats). Trình biên dịch
      đi qua từng segment và tự sửa để KHÔNG THỂ ghép lỗi:
@@ -199,7 +236,8 @@
     return b;
   }
 
-  function compilePhase(beats, targetLen) {
+  function compilePhase(beats, targetLen, segOffset) {
+    segOffset = segOffset || 0;
     const out = [];
     /* Giả định xấu nhất về phase trước: segment cuối của phase trước luôn là
        segment nghỉ, nên khi vào phase này mọi làn đã trống 1 segment.
@@ -241,8 +279,12 @@
       return peak;
     };
 
-    /* Chừa 2 slot cuối cho đuôi chuẩn hoá: [phase-reset, breath] */
-    const TAIL = 2;
+    /* Chừa slot cuối cho đuôi chuẩn hoá: [phase-reset, breath].
+       phase-reset có cả hai hàng đặc, nên ở vùng tốc độ cao nó cũng phải giãn
+       thành 2 segment => đuôi dài 3 slot. Cuối P3 người chơi có thể đang boost
+       (50 × 1.35 = 67.5 m/s) nên chỗ nối này càng phải rộng. */
+    const wideTail = speedAtSeg(segOffset + targetLen - 2) > SAFE_ROW_SPEED;
+    const TAIL = wideTail ? 3 : 2;
     const body = targetLen - TAIL;
     const remaining = () => body - out.length;
 
@@ -260,7 +302,9 @@
 
       // 3) khối designer, chỉ đặt khi không phá ràng buộc và còn đủ chỗ
       if (bi < beats.length) {
-        const blk = beats[bi];
+        /* giãn theo tốc độ TRƯỚC khi kiểm chỗ: ở P3 nửa sau một khối 1 segment
+           có thể nở thành 2 segment, phải tính vào ngân sách độ dài. */
+        const blk = widenBlock(beats[bi], segOffset + out.length);
         if (blk.length > remaining()) { bi = beats.length; continue; }
         if (densePeakIfPlaced(blk) > MAX_DENSE_RUN) { pushAll(brt()); continue; }
         if (streakPeakIfPlaced(blk) > MAX_FREE_STREAK) {
@@ -282,7 +326,9 @@
           Mỗi hàng vẫn còn ≥1 làn mở, giữa hai hàng chỉ cần dịch 1 làn nên né được.
           Rồi 1 segment nghỉ => mọi biến thể kết thúc với streak = [1,1,1],
           nên ghép A/B/C bất kỳ cũng không tạo hành lang an toàn ở chỗ nối. */
-    push({ r1: { block: [0, 1] }, r2: { block: [2] }, tag: 'phase-reset' });
+    pushAll(widenBlock(
+      [{ r1: { block: [0, 1] }, r2: { block: [2] }, tag: 'phase-reset' }],
+      segOffset + out.length));
     push({ r1: null, r2: null, tag: 'breath' });
     out.leftover = beats.length - bi;
     out.denseAtTail = dense;
@@ -326,38 +372,51 @@
          Gift đã chuyển sang P2. */
       /* P3 = 30–60s ⇒ 950–2300m = 1350m ≈ 42 segment, cộng dự phòng boost
          (BOOST_RESERVE ≈ 158m ≈ 5 segment) và một ít biên ⇒ 50. */
+      /* P3 bỏ gsx (gate rồi chặn chính làn vừa mở trong 16m) — đó là thủ phạm
+         chính làm map "khó di chuyển": ép dịch đúng 1 làn trong 0.32s ở 50 m/s.
+         Các khối wv vẫn viết bình thường; compiler TỰ GIÃN chúng thành 32m khi
+         segment nằm ở vùng v > 45.7 m/s (xem widenBlock). Độ khó tăng qua mật độ
+         gate/oil chứ không qua việc bóp thời gian phản xạ.
+         Chuỗi gt liên tiếp (đổi làn mở mỗi lần) cho 2 vật cản/segment mà hàng
+         vẫn cách 32m — cách tăng áp lực an toàn nhất ở tốc độ cao. */
       key: 'P3', label: 'Intense + Peak', len: 50,
       beats: {
-        A: [gsx(1), wv(0, 2), gt(0), wv(1, 2), oil(1),
-            gsx(2), wv(1, 0), itCross('booster', 0),
-            gsx(1), wv(2, 1), gt(2), wv(0, 1), oil(0),
-            gsx(2), wv(0, 2), gt(1), gsx(1), gt(0), wv(1, 2), gsx(2), wv(2, 0), oil(2),
-            gsx(0), wv(2, 0), gt(2), wv(1, 0), oil(1),
-            gsx(2), wv(0, 1), gt(0), wv(2, 1)],
-        B: [gt(1), wv(2, 0), gsx(0), wv(1, 2), oil(2),
-            gsx(1), gt(2), itGaunt('booster', 2),
-            gsx(2), wv(1, 0), gt(0), wv(2, 1), oil(0),
-            gsx(0), wv(1, 2), gt(1), gsx(2), gt(2), wv(0, 1), gsx(1), wv(2, 0), oil(1),
-            gsx(1), wv(0, 2), gt(1), gsx(0), oil(2),
-            gt(1), wv(2, 1), gsx(0), wv(0, 2), gsx(2)],
-        C: [gsx(0), wv(1, 2), gt(2), wv(0, 1), oil(1),
-            gsx(1), gt(0), itBait('booster', 0, 1),
-            gsx(2), wv(0, 2), gt(1), wv(2, 0), oil(0),
-            gsx(1), gt(2), wv(1, 0), gsx(0), wv(2, 1), gt(0), gsx(2), wv(0, 2), oil(2),
-            gsx(0), wv(2, 0), gt(1), wv(0, 2), oil(1),
-            gsx(2), gt(1), wv(1, 2), gt(0), gsx(1)]
+        A: [gt(1), wv(0, 2), gt(0), wv(1, 2), oil(1),
+            gt(2), wv(1, 0), itCross('booster', 0),
+            gt(1), wv(2, 1), gt(2), wv(0, 1), oil(0),
+            gt(0), gt(2), wv(0, 2), gt(1), oil(2),
+            gt(2), gt(0), wv(2, 0), gt(1), gt(2), wv(1, 0), oil(1)],
+        B: [gt(1), wv(2, 0), gt(0), wv(1, 2), oil(2),
+            gt(1), wv(1, 0), itGaunt('booster', 2),
+            gt(2), wv(0, 1), gt(0), wv(2, 1), oil(0),
+            gt(1), gt(0), wv(1, 2), gt(2), oil(1),
+            gt(1), gt(2), wv(0, 2), gt(0), gt(1), wv(2, 1), oil(2),
+            gt(2)],
+        C: [gt(0), wv(1, 2), gt(2), wv(0, 1), oil(1),
+            gt(1), wv(2, 0), itBait('booster', 0, 1),
+            gt(2), wv(0, 2), gt(1), wv(1, 0), oil(0),
+            gt(0), gt(1), wv(2, 1), gt(2), oil(2),
+            gt(1), gt(0), wv(0, 2), gt(2), gt(0), wv(1, 2), oil(1),
+            gt(0), gt(2), wv(2, 1), gt(1), gt(0)]
       }
     }
   ];
 
   /* Biên dịch thành thư viện segment cuối cùng */
   const COMPILED = {};
-  PHASE_SPEC.forEach(spec => {
-    COMPILED[spec.key] = {};
-    ['A', 'B', 'C'].forEach(k => {
-      COMPILED[spec.key][k] = compilePhase(spec.beats[k], spec.len);
+  {
+    /* offset segment toàn cục của từng phase — compiler cần biết để suy ra tốc độ
+       tại chỗ và tự giãn hàng khi cần (auto-widen). Mọi biến thể cùng phase có
+       cùng độ dài nên offset là hằng số, không phụ thuộc lựa chọn A/B/C. */
+    let off = 0;
+    PHASE_SPEC.forEach(spec => {
+      COMPILED[spec.key] = {};
+      ['A', 'B', 'C'].forEach(k => {
+        COMPILED[spec.key][k] = compilePhase(spec.beats[k], spec.len, off);
+      });
+      off += spec.len;
     });
-  });
+  }
 
   const PHASE_DEF = PHASE_SPEC.map(spec => ({
     key: spec.key, label: spec.label, len: spec.len, lib: COMPILED[spec.key]
@@ -457,9 +516,13 @@
     out.push([!offGrid.length, 'Hàng đúng lattice ' + ROW_GAP + 'm',
       offGrid.length ? 'lệch @' + offGrid.slice(0, 3).join(',') : obsRows.length + ' hàng OK']);
 
-    // 2. hàng gần nhất vẫn đủ thời gian phản xạ 1 làn
+    /* 2. Hàng gần nhất vẫn đủ thời gian phản xạ 1 làn.
+       Chỉ xét phần map trong 60 giây thực. Đoạn sau BASE_DIST là dự phòng boost,
+       người chơi chỉ tới đó khi đã ăn cả hai booster nên đang bất tử/nhanh hơn,
+       và tốc độ ở đó là ngoại suy ngoài SPEED_LEVELS. */
     let minDt = Infinity, minAt = 0;
     for (let i = 1; i < obsRows.length; i++) {
+      if (obsRows[i].y > BASE_DIST) break;
       const dt = (obsRows[i].y - obsRows[i - 1].y) / speedAt(obsRows[i].time);
       if (dt < minDt) { minDt = dt; minAt = obsRows[i].time; }
     }
@@ -533,14 +596,23 @@
     segs.forEach(s => { run = s.obstacles.length ? run + 1 : 0; mxRun = Math.max(mxRun, run); });
     out.push([mxRun <= MAX_DENSE_RUN, 'Chuỗi segment có vật cản ≤ ' + MAX_DENSE_RUN, 'dài nhất ' + mxRun]);
 
-    // 9. mật độ tăng dần
+    /* 9. Mật độ tăng dần — đo theo obs/GIÂY, không phải obs/segment.
+       obs/segment là thước đo sai ở phase cuối: tốc độ 45–50 m/s buộc các hàng
+       phải giãn từ 16m lên 32m (ràng buộc REACT_MARGIN), nên số vật cản trên mỗi
+       32m tất yếu giảm dù áp lực thực tế tăng. Cái người chơi cảm nhận là số vật
+       cản phải xử lý trong một giây — và ở P3 xe đi nhanh gấp đôi P1. */
     const dens = ['P1', 'P2', 'P3'].map(p => {
       const g = segs.filter(s => s.phase === p);
+      if (!g.length) return { perSeg: 0, perSec: 0 };
       const n = g.reduce((a, s) => a + s.obstacles.filter(o => o.t !== 'booster' && o.t !== 'gift').length, 0);
-      return g.length ? n / g.length : 0;
+      const t0 = timeAtDist(g[0].dist);
+      const t1 = timeAtDist(g[g.length - 1].dist + SEG_H);
+      return { perSeg: n / g.length, perSec: n / Math.max(0.01, t1 - t0) };
     });
-    out.push([dens[0] < dens[1] && dens[1] < dens[2], 'Mật độ tăng đều P1<P2<P3',
-      dens.map(d => d.toFixed(2)).join(' → ') + ' obs/seg']);
+    const rising = dens[0].perSec < dens[1].perSec && dens[1].perSec < dens[2].perSec;
+    out.push([rising, 'Mật độ tăng đều P1<P2<P3',
+      dens.map(d => d.perSec.toFixed(2)).join(' → ') + ' obs/s  (' +
+      dens.map(d => d.perSeg.toFixed(2)).join(' → ') + ' obs/seg)']);
 
     // 10. đủ 4 loại vật cản
     const ids = new Set();

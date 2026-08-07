@@ -29,8 +29,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -58,8 +58,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -87,8 +87,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -116,8 +116,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -145,8 +145,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -174,8 +174,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -203,8 +203,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -232,8 +232,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -261,8 +261,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -290,8 +290,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -319,8 +319,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -348,8 +348,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -377,8 +377,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -406,8 +406,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -435,8 +435,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -464,8 +464,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -493,8 +493,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -522,8 +522,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -551,8 +551,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -580,8 +580,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -609,8 +609,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -638,8 +638,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -667,8 +667,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -696,8 +696,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]
@@ -725,8 +725,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1288,
-          "atSecond": 38.2,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "cross"
         }
       ]
@@ -754,8 +754,8 @@
           "type": "booster",
           "lane": "R",
           "x": 3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1352,
+          "atSecond": 39.7,
           "context": "gauntlet"
         }
       ]
@@ -783,8 +783,8 @@
           "type": "booster",
           "lane": "L",
           "x": -3.5,
-          "distanceY": 1256,
-          "atSecond": 37.4,
+          "distanceY": 1288,
+          "atSecond": 38.2,
           "context": "bait"
         }
       ]

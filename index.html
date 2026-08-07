@@ -1,10 +1,13 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Road Rush — Level Design Tool</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;background:#F4F1FD;color:#2E2A45;padding:12px;line-height:1.45}
+/* Khi đang chơi trên mobile: khóa cuộn trang và ghim khung game full màn,
+   để kéo xe không bị nhầm thành cuộn và không mất khung game khỏi tầm nhìn. */
+body.playing{overflow:hidden;position:fixed;inset:0;width:100%}
 /* Hai cột cân nhau: cột phải rộng đủ cho canvas 390px + padding panel + HUD,
    cột trái lấy phần còn lại nhưng không hẹp hơn 520px để bảng không bị bó. */
 .main-layout{display:grid;grid-template-columns:minmax(520px,1fr) 424px;
@@ -47,7 +50,13 @@ td b{font-family:'Fredoka',sans-serif;font-size:12px;color:#3D3266}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10px;color:#6B6390;margin-top:5px}
 .legend span{display:flex;align-items:center;gap:4px}
 .sw{width:10px;height:8px;border-radius:2px;display:inline-block}
-canvas#cv{display:block;border-radius:20px;background:#EDE9FB;width:390px;box-shadow:0 6px 22px rgba(91,75,158,.14)}
+/* Canvas co lại trên màn nhỏ. Phải có aspect-ratio + height:auto, nếu chỉ đặt
+   width thì browser vẫn dùng attribute height=780 làm CSS height nên xe bị méo.
+   touch-action:none để kéo trên canvas không bị browser hiểu là cuộn trang. */
+canvas#cv{display:block;border-radius:20px;background:#EDE9FB;
+  width:390px;max-width:100%;height:auto;aspect-ratio:390/780;
+  touch-action:none;-webkit-user-select:none;user-select:none;
+  box-shadow:0 6px 22px rgba(91,75,158,.14)}
 .game-hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:8px;font-size:11px}
 .game-hud div{background:#F8F6FE;border-radius:6px;padding:4px 8px;display:flex;justify-content:space-between}
 .game-hud b{font-family:'Fredoka',sans-serif;font-size:13px;color:#3D3266}
@@ -141,6 +150,20 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
 .itrack .it.got{background:#DEF5EC;color:#1B6B51;border-color:#9BD9C2}
 .itrack .it.near{background:#FFF6E5;border-color:#F0C674;color:#7A5A1E}
 .itrack .it.miss{background:#F4F4F8;color:#B8B2C8;text-decoration:line-through}
+
+/* ---------- mobile: chơi toàn màn ----------
+   Dưới 1180px cột phải xếp xuống dưới. Khi bấm Play thì ghim nó lên toàn
+   màn hình để không phải cuộn tìm, và canvas cao theo viewport. */
+@media(max-width:1180px){
+  body.playing .col-left{display:none}
+  body.playing .col-right{position:fixed;inset:0;z-index:60;margin:0;
+    display:flex;align-items:center;justify-content:center;
+    background:#F4F1FD;padding:8px;overflow:hidden}
+  body.playing .col-right>.panel{margin:0;width:100%;max-width:420px;
+    max-height:100%;display:flex;flex-direction:column}
+  body.playing canvas#cv{width:auto;height:auto;
+    max-height:calc(100vh - 190px);max-width:100%;margin:0 auto}
+}
 </style>
 
 <div class="main-layout">
@@ -316,6 +339,7 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
     <div style="flex:1"></div>
     <button class="btn btn-p" id="btnPlayPause">▶ Play</button>
     <button class="btn btn-s" id="btnRestart">↻ Lại</button>
+    <button class="btn btn-s" id="btnExit" style="display:none">✕</button>
   </div>
   <canvas id="cv" width="390" height="780"></canvas>
   <div class="game-hud">
@@ -327,8 +351,8 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
     <div><span>Hits</span><b id="hHits">0</b></div>
   </div>
   <div id="itemTrack" class="itrack"></div>
-  <div class="hint"><b>Kéo</b> chuột/ngón tay để lái · chạm nhanh đổi 1 làn · <b>← →</b> hoặc <b>A D</b><br>
-  <b>Space</b> play/pause · <b>P</b> hoặc <b>Esc</b> pause</div>
+  <div class="hint"><b>Kéo</b> chuột/ngón tay để lái · chạm nhanh đổi 1 làn<br>
+  <b>← →</b> / <b>A D</b> đổi làn · <b>Space</b> play/pause · <b>Esc</b> pause · <b>✕</b> thoát</div>
 </div>
 </div>
 </div>
@@ -594,16 +618,23 @@ function syncControls(){
  const pp=document.getElementById('btnPlayPause');
  const rs=document.getElementById('btnRestart');
  const map={
-  idle:      ['▶ Play',    'btn btn-p', false],
-  running:   ['⏸ Pause',   'btn btn-s', false],
-  paused:    ['▶ Tiếp tục','btn btn-p', false],
-  countdown: ['⏸ Pause',   'btn btn-s', false],
-  over:      ['▶ Chơi lại','btn btn-p', false]
+  idle:      ['▶ Play',    'btn btn-p'],
+  running:   ['⏸ Pause',   'btn btn-s'],
+  paused:    ['▶ Tiếp tục','btn btn-p'],
+  countdown: ['⏸ Pause',   'btn btn-s'],
+  over:      ['▶ Chơi lại','btn btn-p']
  }[SESSION];
  pp.textContent=map[0]; pp.className=map[1];
  rs.disabled=(SESSION==='idle');
  rs.style.opacity=rs.disabled?.45:1;
  rs.style.cursor=rs.disabled?'default':'pointer';
+
+ /* Khóa cuộn + phóng to khung game khi đang trong phiên chơi.
+    Giữ cả lúc paused/countdown để không bị nhảy layout khi tạm dừng. */
+ const active=(SESSION==='running'||SESSION==='paused'||SESSION==='countdown');
+ document.body.classList.toggle('playing',active);
+ const ex=document.getElementById('btnExit');
+ if(ex)ex.style.display=active?'':'none';
 }
 
 function curSpeed(){
@@ -630,14 +661,19 @@ addEventListener('keydown',e=>{
    LATERAL_V = 14 m/s như Unity, nên không thể teleport qua vật cản.
    Nhả tay thì xe tự về tâm làn gần nhất.
    Chạm nhanh không kéo (tap) vẫn đổi 1 làn như cũ, để dùng được cả hai cách. */
-const TAP_PX=10;               // ngưỡng px để phân biệt tap và drag
+/* Ngưỡng tính theo px THẬT trên màn hình, không theo hệ canvas. Canvas co giãn
+   nên cùng một cái vuốt sẽ ra số px canvas khác nhau giữa desktop và mobile. */
+const TAP_PX=8;
+
+/* Số mét thế giới ứng với 1 px màn hình, phụ thuộc kích thước hiển thị hiện tại */
+const mPerScreenPx=()=>ROAD_W/cv.getBoundingClientRect().width;
 
 cv.addEventListener('pointerdown',e=>{
  if(SESSION==='idle'||SESSION==='over'){startGame();return}
  if(SESSION==='paused'){resumeGame();return}
  if(SESSION==='countdown')return;
  if(!G||G.state==='slipping')return;
- cv.setPointerCapture(e.pointerId);
+ try{cv.setPointerCapture(e.pointerId)}catch(_){}
  drag={sx:e.clientX,scar:G.x,moved:false,id:e.pointerId};
  e.preventDefault();
 });
@@ -645,18 +681,18 @@ cv.addEventListener('pointerdown',e=>{
 cv.addEventListener('pointermove',e=>{
  if(!drag||drag.id!==e.pointerId||!G)return;
  if(SESSION!=='running'||G.state==='slipping')return;
- const r=cv.getBoundingClientRect();
- const dxPx=(e.clientX-drag.sx)/r.width*CW;   // px canvas đã di
- if(Math.abs(dxPx)>TAP_PX)drag.moved=true;
+ const dScreen=e.clientX-drag.sx;             // px thật đã vuốt
+ if(Math.abs(dScreen)>TAP_PX)drag.moved=true;
  if(!drag.moved)return;
- /* mục tiêu = vị trí xe lúc bắt đầu kéo + khoảng đã kéo, quy ra mét */
- G.target=Math.max(-CAR_LIMIT_X,Math.min(CAR_LIMIT_X,drag.scar+dxPx/PS));
- G.free=true;                                 // đang lái tự do, bỏ snap làn
+ /* đích = vị trí xe lúc bắt đầu kéo + khoảng đã vuốt, quy ra mét */
+ G.target=Math.max(-CAR_LIMIT_X,Math.min(CAR_LIMIT_X,
+   drag.scar+dScreen*mPerScreenPx()));
+ G.free=true;                                 // lái tự do, bỏ snap làn
  e.preventDefault();
 });
 
 function endDrag(e){
- if(!drag||(e&&drag.id!==e.pointerId))return;
+ if(!drag||(e&&e.pointerId!=null&&drag.id!==e.pointerId))return;
  const wasTap=!drag.moved;
  const startX=drag.sx;
  drag=null;
@@ -666,17 +702,26 @@ function endDrag(e){
   const r=cv.getBoundingClientRect();
   mv((startX-r.left)/r.width<.5?-1:1);
  } else {
-  /* nhả sau khi kéo: chốt về làn gần nhất */
+  /* Nhả sau khi kéo: chốt về làn gần ĐÍCH nhất, không phải gần vị trí hiện tại.
+     Nếu dùng G.x thì khi nhả tay sớm (xe chưa kịp đi tới đích do bị giới hạn
+     tốc độ ngang) xe sẽ quay ngược về làn cũ, trái ý người chơi. */
+  const ref=(G.target!=null)?G.target:G.x;
   G.free=false;
-  G.lane=nearestLane(G.x);
   G.target=null;
+  G.lane=nearestLane(ref);
  }
 }
-cv.addEventListener('pointerup',endDrag);
-cv.addEventListener('pointercancel',endDrag);
-cv.addEventListener('pointerleave',e=>{if(drag&&drag.id===e.pointerId)endDrag(e)});
-/* chặn scroll trang khi kéo trên canvas ở mobile */
-cv.style.touchAction='none';
+/* Nghe pointerup/cancel trên window, không phải canvas: ngón tay thường
+   trượt ra ngoài canvas khi kéo, nếu chỉ nghe trên canvas thì mất event
+   và drag bị treo. Bỏ hẳn pointerleave vì nó hủy drag ngay khi ngón tay
+   ra khỏi mép canvas — đó chính là lý do mobile không kéo được. */
+addEventListener('pointerup',endDrag);
+addEventListener('pointercancel',endDrag);
+
+/* iOS Safari chưa hỗ trợ touch-action đầy đủ ở mọi phiên bản, nên chặn thêm
+   ở tầng touch event. passive:false để preventDefault có hiệu lực. */
+['touchstart','touchmove'].forEach(t=>
+ cv.addEventListener(t,e=>{if(drag||SESSION==='running')e.preventDefault()},{passive:false}));
 
 const nearestLane=x=>{
  let best=0,bd=1e9;
@@ -696,6 +741,8 @@ document.getElementById('btnPlayPause').onclick=()=>{
  else togglePause();
 };
 document.getElementById('btnRestart').onclick=()=>startGame();
+/* Thoát phiên chơi: về idle, mở lại cuộn trang và bảng dữ liệu */
+document.getElementById('btnExit').onclick=()=>resetGame();
 
 function loop(now){
  const dt=Math.min((now-last)/1000,.05);last=now;
