@@ -132,14 +132,21 @@ Collider 2.6 × 2.6. Ngân sách boost 2 × 5s / 60s = 17% thời lượng.
 
 ## Tính điểm
 
-**Điểm = quãng đường đã đi, tính bằng km.** Không có nguồn điểm nào khác.
+**Điểm = quãng đường đã đi, đơn vị mét.** Không có nguồn điểm nào khác.
 
 ```
-điểm = dist / 1000        // hiển thị 2 số thập phân
+điểm = G.dist           // chính là giá trị mét, không quy đổi
 ```
 
-Không có biến `score` trong game state — điểm suy ra từ `G.dist` khi hiển thị, nên
-không thể lệch khỏi quãng đường.
+Phần nguyên là mét, hai số thập phân là phần dưới mét (cm). Dấu phẩy chỉ là phân cách
+nghìn cho dễ đọc:
+
+```
+1,655.05   =   1655 mét  +  5 cm
+```
+
+Không có biến `score` trong game state — điểm chính là `G.dist`, chỉ định dạng lại khi
+hiển thị, nên không thể lệch khỏi quãng đường.
 
 | | Ảnh hưởng tới điểm |
 |---|---|
@@ -148,7 +155,7 @@ không thể lệch khỏi quãng đường.
 | Gift | **không** — voucher là vật phẩm riêng |
 | Va chạm | giảm điểm vì mất ~10m |
 
-Chạy sạch không ăn booster = `2.30 km`. Tối đa lý thuyết = `2.46 km`.
+Chạy sạch không ăn booster = `2,300.00`. Tối đa lý thuyết = `2,458.00`.
 
 Cách tính này khớp luôn với server: `app.ts` xác thực bằng `distance` và không có khái
 niệm điểm, nên điểm hiển thị và giá trị server kiểm là cùng một đại lượng.

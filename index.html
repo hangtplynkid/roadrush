@@ -343,9 +343,9 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
   </div>
   <canvas id="cv" width="390" height="780"></canvas>
   <div class="game-hud">
-    <!-- Điểm CHÍNH LÀ quãng đường, nên chỉ một ô: km lớn, mét nhỏ bên dưới -->
-    <div><span>Điểm · km</span><b id="hScore">0.00</b></div>
-    <div><span>Mét</span><b id="hDist">0m</b></div>
+    <!-- Điểm CHÍNH LÀ quãng đường tính bằng mét (2 số thập phân = phần cm).
+         Bỏ ô "Mét" cũ vì nó trùng nội dung với điểm. -->
+    <div><span>Điểm · m</span><b id="hScore">0.00</b></div>
     <div><span>Time</span><b id="hTime">60.0</b></div>
     <div><span>Speed</span><b id="hSpd">20</b></div>
     <div><span>Boost</span><b id="hBoost">0/2</b></div>
@@ -381,9 +381,13 @@ const {
 /* ================= STATE ================= */
 let SEL={P1:'A',P2:'A',P3:'A'}, MAP=null;
 
-/* ĐIỂM = quãng đường đã đi, tính bằng km. Đây là nguồn điểm DUY NHẤT — item không
-   cộng điểm. 2 số thập phân vì cả phiên chỉ đi ~2.3km, làm tròn tới m sẽ mất phân giải. */
-const km = m => (m / 1000).toFixed(2);
+/* ĐIỂM = quãng đường đã đi, ĐƠN VỊ MÉT. Đây là nguồn điểm DUY NHẤT — item không cộng điểm.
+   Phần nguyên là mét, 2 số thập phân là phần dưới mét (cm):
+     1655.05  =  1655 mét + 5 cm
+   Dấu phẩy chỉ là phân cách nghìn cho dễ đọc: "1,655.05".
+   KHÔNG chia 1000 — trước đây hàm này chia 1000 rồi vẫn gắn nhãn "km", nên 1655m
+   hiện thành "1.66 km" và mất luôn phân giải cm. */
+const fmtScore = m => m.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /* ================= RENDER ================= */
 /* Thông số luật chơi hiện ngay dưới khung game. Trước đây chúng chỉ nằm trong
@@ -392,7 +396,7 @@ const km = m => (m / 1000).toFixed(2);
 function renderRulesHint(){
  const el=document.getElementById('rulesHint');
  if(!el)return;
- el.innerHTML=`🏁 Điểm = <b>km đã đi</b> · không có nguồn điểm nào khác · `
+ el.innerHTML=`🏁 Điểm = <b>số mét đã đi</b> (2 số thập phân = cm) · không nguồn nào khác · `
   +`🎁 Gift là <b>voucher</b>, không cộng điểm<br>`
   +`💥 Va chạm <b>${COLLIDE_DUR}s</b> ở ${COLLIDE_MULT}× `
   +`+ hồi dần <b>${RECOVER_DUR}s</b> (tổng ${(COLLIDE_DUR+RECOVER_DUR).toFixed(1)}s) · `
@@ -420,9 +424,9 @@ function renderParams(){
  <div class="param"><label>Slip</label><div class="val">${SLIP_DUR}s</div></div>
  <div class="param"><label>Boost</label><div class="val">${BOOST_DUR}s ${BOOST_MULT}×</div></div>
  <div class="param"><label>Boost xuyên</label><div class="val">${BOOST_PASS} vật cản</div></div>
- <div class="param"><label>Điểm</label><div class="val">km đã đi</div></div>
+ <div class="param"><label>Điểm</label><div class="val">mét đã đi</div></div>
  <div class="param"><label>Gift</label><div class="val">voucher</div></div>
- <div class="param"><label>Max điểm</label><div class="val">${km(BASE_DIST+BOOST_RESERVE)} km</div></div>
+ <div class="param"><label>Max điểm</label><div class="val">${fmtScore(BASE_DIST+BOOST_RESERVE)} m</div></div>
  <div class="param"><label>Combos</label><div class="val">3³ = 27</div></div>
  </div>`;
 }
@@ -601,7 +605,7 @@ const COUNTDOWN=3;
 let drag=null;                      // trạng thái kéo chuột/ngón tay (xem bên dưới)
 
 function buildGame(){
- /* Không có biến `score`: điểm = G.dist / 1000 (km), suy ra khi hiển thị.
+ /* Không có biến `score`: điểm CHÍNH LÀ G.dist (mét), chỉ định dạng khi hiển thị.
     Giữ một nguồn sự thật duy nhất nên điểm không thể lệch khỏi quãng đường. */
  G={t:0,dist:0,x:0,lane:1,hits:0,boosts:0,gift:false,
     state:'moving',stTimer:0,boost:0,slipDir:0,pops:[],
@@ -932,9 +936,9 @@ function draw(){
  ctx.fillStyle='#8B7BD8';ctx.fillRect(0,0,CW*G.t/GAME_TIME,4);
  ctx.fillStyle='rgba(91,75,158,.72)';ctx.beginPath();ctx.roundRect(8,10,150,46,8);ctx.fill();
  ctx.fillStyle='#fff';ctx.textAlign='left';ctx.font='600 18px Fredoka';
- ctx.fillText(km(G.dist)+' km',16,34);
+ ctx.fillText(fmtScore(G.dist)+' m',16,34);
  ctx.font='500 10px Be Vietnam Pro';
- ctx.fillText(`${Math.round(G.dist)}m · ${(GAME_TIME-G.t).toFixed(1)}s · ${G.state}`,16,48);
+ ctx.fillText(`${(GAME_TIME-G.t).toFixed(1)}s còn lại · ${G.state}`,16,48);
  /* Chỉ báo đang bị phạt / đang hồi phục, kèm % tốc độ hiện tại so với tốc độ gốc.
     Không có nó thì rất khó biết mình còn chậm bao lâu và vì sao. */
  if(G.state==='collided'||G.state==='slipping'||G.recover>0){
@@ -963,9 +967,8 @@ function draw(){
    ctx.fillText('hết lượt xuyên',CW-14,68)}
  }
 
- document.getElementById('hScore').textContent=km(G.dist);
+ document.getElementById('hScore').textContent=fmtScore(G.dist);
  document.getElementById('hGift').textContent=G.gift?'🎁 có':'—';
- document.getElementById('hDist').textContent=Math.round(G.dist)+'m';
  document.getElementById('hTime').textContent=(GAME_TIME-G.t).toFixed(1);
  document.getElementById('hSpd').textContent=curSpeed().toFixed(1);
  document.getElementById('hBoost').textContent=G.boosts+'/'+N_BOOST;
@@ -1027,7 +1030,7 @@ function drawOverlay(){
   ctx.fillStyle='#fff';ctx.font='600 24px Fredoka';
   ctx.fillText('Tạm dừng',CW/2,CH/2-26);
   ctx.font='400 12.5px Be Vietnam Pro';ctx.fillStyle='#C9BFEB';
-  ctx.fillText(`${km(G.dist)} km · còn ${(GAME_TIME-G.t).toFixed(1)}s`,CW/2,CH/2);
+  ctx.fillText(`${fmtScore(G.dist)} m · còn ${(GAME_TIME-G.t).toFixed(1)}s`,CW/2,CH/2);
   const bw=170,bh=40,bx=CW/2-bw/2,by=CH/2+22;
   ctx.fillStyle='#8B7BD8';ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();
   ctx.fillStyle='#fff';ctx.font='600 15px Fredoka';
@@ -1063,9 +1066,9 @@ function drawOverlay(){
   ctx.fillStyle='#8C85AC';ctx.font='600 12px Be Vietnam Pro';
   ctx.fillText('HẾT 60 GIÂY',CW/2,CH/2-58);
   ctx.fillStyle='#fff';ctx.font='600 30px Fredoka';
-  ctx.fillText(km(G.dist)+' km',CW/2,CH/2-24);
+  ctx.fillText(fmtScore(G.dist)+' m',CW/2,CH/2-24);
   ctx.font='400 13px Be Vietnam Pro';ctx.fillStyle='#C9BFEB';
-  ctx.fillText(`${Math.round(G.dist)}m · ${G.hits} va chạm · ${G.boosts}/${N_BOOST} boost${G.gift?' · 🎁 voucher':''}`,CW/2,CH/2+4);
+  ctx.fillText(`${G.hits} va chạm · ${G.boosts}/${N_BOOST} boost${G.gift?' · 🎁 voucher':''}`,CW/2,CH/2+4);
   ctx.fillStyle='#9A93B8';ctx.font='400 12px Be Vietnam Pro';
   ctx.fillText(`Map ${MAP.sel.P1}-${MAP.sel.P2}-${MAP.sel.P3}`,CW/2,CH/2+26);
   const bw=160,bh=40,bx=CW/2-bw/2,by=CH/2+44;
