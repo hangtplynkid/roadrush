@@ -343,11 +343,13 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
   </div>
   <canvas id="cv" width="390" height="780"></canvas>
   <div class="game-hud">
-    <div><span>Score</span><b id="hScore">0</b></div>
-    <div><span>Dist</span><b id="hDist">0m</b></div>
+    <!-- Điểm CHÍNH LÀ quãng đường, nên chỉ một ô: km lớn, mét nhỏ bên dưới -->
+    <div><span>Điểm · km</span><b id="hScore">0.00</b></div>
+    <div><span>Mét</span><b id="hDist">0m</b></div>
     <div><span>Time</span><b id="hTime">60.0</b></div>
     <div><span>Speed</span><b id="hSpd">20</b></div>
     <div><span>Boost</span><b id="hBoost">0/2</b></div>
+    <div><span>Voucher</span><b id="hGift">—</b></div>
     <div><span>Hits</span><b id="hHits">0</b></div>
   </div>
   <div id="itemTrack" class="itrack"></div>
@@ -368,7 +370,7 @@ const {
   SPEED_LEVELS, OBS_MAP,
   CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
   SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT, RECOVER_DUR, HIT_DEPTH_MIN,
-  BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, BOOST_PASS, N_BOOST,
+  BOOST_DUR, BOOST_MULT, BOOST_PASS, N_BOOST,
   ITEM_W, ITEM_H,
   BASE_DIST, BOOST_RESERVE,
   speedAt, distAtTime, timeAtDist,
@@ -379,6 +381,10 @@ const {
 /* ================= STATE ================= */
 let SEL={P1:'A',P2:'A',P3:'A'}, MAP=null;
 
+/* ĐIỂM = quãng đường đã đi, tính bằng km. Đây là nguồn điểm DUY NHẤT — item không
+   cộng điểm. 2 số thập phân vì cả phiên chỉ đi ~2.3km, làm tròn tới m sẽ mất phân giải. */
+const km = m => (m / 1000).toFixed(2);
+
 /* ================= RENDER ================= */
 /* Thông số luật chơi hiện ngay dưới khung game. Trước đây chúng chỉ nằm trong
    accordion "Config đầy đủ" (đóng mặc định, tab Thiết kế) nên khi đổi số người
@@ -386,7 +392,9 @@ let SEL={P1:'A',P2:'A',P3:'A'}, MAP=null;
 function renderRulesHint(){
  const el=document.getElementById('rulesHint');
  if(!el)return;
- el.innerHTML=`💥 Va chạm <b>${COLLIDE_DUR}s</b> ở ${COLLIDE_MULT}× `
+ el.innerHTML=`🏁 Điểm = <b>km đã đi</b> · không có nguồn điểm nào khác · `
+  +`🎁 Gift là <b>voucher</b>, không cộng điểm<br>`
+  +`💥 Va chạm <b>${COLLIDE_DUR}s</b> ở ${COLLIDE_MULT}× `
   +`+ hồi dần <b>${RECOVER_DUR}s</b> (tổng ${(COLLIDE_DUR+RECOVER_DUR).toFixed(1)}s) · `
   +`💧 Oil <b>${SLIP_DUR}s</b> mất lái<br>`
   +`⚡ Boost <b>${BOOST_DUR}s</b> ${BOOST_MULT}× · xuyên <b>${BOOST_PASS}</b> vật cản, `
@@ -412,8 +420,9 @@ function renderParams(){
  <div class="param"><label>Slip</label><div class="val">${SLIP_DUR}s</div></div>
  <div class="param"><label>Boost</label><div class="val">${BOOST_DUR}s ${BOOST_MULT}×</div></div>
  <div class="param"><label>Boost xuyên</label><div class="val">${BOOST_PASS} vật cản</div></div>
- <div class="param"><label>Boost pts</label><div class="val">+${BOOST_SCORE}</div></div>
- <div class="param"><label>Gift pts</label><div class="val">+${GIFT_SCORE}</div></div>
+ <div class="param"><label>Điểm</label><div class="val">km đã đi</div></div>
+ <div class="param"><label>Gift</label><div class="val">voucher</div></div>
+ <div class="param"><label>Max điểm</label><div class="val">${km(BASE_DIST+BOOST_RESERVE)} km</div></div>
  <div class="param"><label>Combos</label><div class="val">3³ = 27</div></div>
  </div>`;
 }
@@ -592,7 +601,9 @@ const COUNTDOWN=3;
 let drag=null;                      // trạng thái kéo chuột/ngón tay (xem bên dưới)
 
 function buildGame(){
- G={t:0,dist:0,x:0,lane:1,score:0,hits:0,boosts:0,gift:false,
+ /* Không có biến `score`: điểm = G.dist / 1000 (km), suy ra khi hiển thị.
+    Giữ một nguồn sự thật duy nhất nên điểm không thể lệch khỏi quãng đường. */
+ G={t:0,dist:0,x:0,lane:1,hits:0,boosts:0,gift:false,
     state:'moving',stTimer:0,boost:0,slipDir:0,pops:[],
     /* boostPass = số lần xuyên vật cản CÒN LẠI của effect đang chạy.
        Hết lượt thì lần va chạm tiếp theo huỷ effect. */
@@ -800,7 +811,6 @@ function step(dt){
  if(G.boost===0)G.boostPass=0;                 // hết thời gian thì hết cả lượt xuyên
  const v=curSpeed();
  G.dist+=v*dt;
- G.score+=v*dt*(G.boost>0?2:1);
  G.pops=G.pops.filter(p=>(p.life-=dt)>0);
  if(G.state==='slipping'){
   G.x=Math.max(-LANE_W,Math.min(LANE_W,G.x+G.slipDir*LANE_W*dt/SLIP_DUR));
@@ -836,9 +846,10 @@ function step(dt){
   touch.filter(h=>h.o.t==='booster'||h.o.t==='gift').forEach(h=>{
    const o=h.o; o.dead=true;
    if(o.t==='booster'){
-    G.boost=BOOST_DUR;G.boostPass=BOOST_PASS;G.boosts++;G.score+=BOOST_SCORE;
+    G.boost=BOOST_DUR;G.boostPass=BOOST_PASS;G.boosts++;
     pop('⚡ BOOST '+BOOST_DUR+'s · '+BOOST_PASS+' lần xuyên','#8B9EFF')}
-   else{G.gift=true;G.score+=GIFT_SCORE;pop('🎁 +'+GIFT_SCORE,'#E8A0C8')}
+   // Gift là VOUCHER, không cộng điểm
+   else{G.gift=true;pop('🎁 Voucher!','#E8A0C8')}
   });
   /* Vật cản: nhóm theo world y, mỗi nhóm quyết định số hit riêng */
   const byRow=new Map();
@@ -854,8 +865,8 @@ function step(dt){
     // sượt mép cái thứ hai trở đi thì bỏ qua hoàn toàn
     if(i>0&&h.depth<HIT_DEPTH_MIN)return;
     if(G.boost>0&&G.boostPass>0){
-     G.boostPass--;G.score+=80;
-     pop('+80 · còn '+G.boostPass+' lần xuyên','#8B9EFF');return}
+     G.boostPass--;
+     pop('⚡ xuyên · còn '+G.boostPass,'#8B9EFF');return}
     if(G.boost>0){G.boost=0;G.boostPass=0;pop('⚡ mất boost','#C0392B')}
     G.hits++;
     if(o.id==='oil'){G.state='slipping';G.stTimer=SLIP_DUR;G.slipDir=G.x<0?1:-1;G.recover=0;pop('💧 mất lái','#6D5BA6')}
@@ -921,7 +932,7 @@ function draw(){
  ctx.fillStyle='#8B7BD8';ctx.fillRect(0,0,CW*G.t/GAME_TIME,4);
  ctx.fillStyle='rgba(91,75,158,.72)';ctx.beginPath();ctx.roundRect(8,10,150,46,8);ctx.fill();
  ctx.fillStyle='#fff';ctx.textAlign='left';ctx.font='600 18px Fredoka';
- ctx.fillText(Math.round(G.score),16,34);
+ ctx.fillText(km(G.dist)+' km',16,34);
  ctx.font='500 10px Be Vietnam Pro';
  ctx.fillText(`${Math.round(G.dist)}m · ${(GAME_TIME-G.t).toFixed(1)}s · ${G.state}`,16,48);
  /* Chỉ báo đang bị phạt / đang hồi phục, kèm % tốc độ hiện tại so với tốc độ gốc.
@@ -952,7 +963,8 @@ function draw(){
    ctx.fillText('hết lượt xuyên',CW-14,68)}
  }
 
- document.getElementById('hScore').textContent=Math.round(G.score);
+ document.getElementById('hScore').textContent=km(G.dist);
+ document.getElementById('hGift').textContent=G.gift?'🎁 có':'—';
  document.getElementById('hDist').textContent=Math.round(G.dist)+'m';
  document.getElementById('hTime').textContent=(GAME_TIME-G.t).toFixed(1);
  document.getElementById('hSpd').textContent=curSpeed().toFixed(1);
@@ -1015,7 +1027,7 @@ function drawOverlay(){
   ctx.fillStyle='#fff';ctx.font='600 24px Fredoka';
   ctx.fillText('Tạm dừng',CW/2,CH/2-26);
   ctx.font='400 12.5px Be Vietnam Pro';ctx.fillStyle='#C9BFEB';
-  ctx.fillText(`${Math.round(G.score)} điểm · ${Math.round(G.dist)}m · còn ${(GAME_TIME-G.t).toFixed(1)}s`,CW/2,CH/2);
+  ctx.fillText(`${km(G.dist)} km · còn ${(GAME_TIME-G.t).toFixed(1)}s`,CW/2,CH/2);
   const bw=170,bh=40,bx=CW/2-bw/2,by=CH/2+22;
   ctx.fillStyle='#8B7BD8';ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();
   ctx.fillStyle='#fff';ctx.font='600 15px Fredoka';
@@ -1051,9 +1063,9 @@ function drawOverlay(){
   ctx.fillStyle='#8C85AC';ctx.font='600 12px Be Vietnam Pro';
   ctx.fillText('HẾT 60 GIÂY',CW/2,CH/2-58);
   ctx.fillStyle='#fff';ctx.font='600 30px Fredoka';
-  ctx.fillText(Math.round(G.score)+' điểm',CW/2,CH/2-24);
+  ctx.fillText(km(G.dist)+' km',CW/2,CH/2-24);
   ctx.font='400 13px Be Vietnam Pro';ctx.fillStyle='#C9BFEB';
-  ctx.fillText(`${Math.round(G.dist)}m · ${G.hits} va chạm · ${G.boosts}/${N_BOOST} boost${G.gift?' · 🎁 quà':''}`,CW/2,CH/2+4);
+  ctx.fillText(`${Math.round(G.dist)}m · ${G.hits} va chạm · ${G.boosts}/${N_BOOST} boost${G.gift?' · 🎁 voucher':''}`,CW/2,CH/2+4);
   ctx.fillStyle='#9A93B8';ctx.font='400 12px Be Vietnam Pro';
   ctx.fillText(`Map ${MAP.sel.P1}-${MAP.sel.P2}-${MAP.sel.P3}`,CW/2,CH/2+26);
   const bw=160,bh=40,bx=CW/2-bw/2,by=CH/2+44;
@@ -1149,7 +1161,7 @@ function renderStrip(){
  <div class="stat"><label>Segment</label><div class="v">${segs.length}<small> · ${segs.length*SEG_H}m</small></div></div>
  <div class="stat"><label>Obstacle</label><div class="v">${obs}<small> · ${rows} hàng</small></div></div>
  <div class="stat"><label>Oil / Breath</label><div class="v">${oil}<small> · ${breath} nghỉ</small></div></div>
- <div class="stat"><label>Quà</label><div class="v">${gift?(gift.dist|0):'—'}<small>m · ${giftPct}% P2</small></div></div>`;
+ <div class="stat"><label>Voucher</label><div class="v">${gift?(gift.dist|0):'—'}<small>m · ${giftPct}% P2</small></div></div>`;
  document.getElementById('tnMap').textContent=segs.length+' seg';
  document.getElementById('mValid').textContent=nBad?nBad+' lỗi cần sửa':'toàn bộ '+v.length+' rule đạt';
  document.getElementById('mItem').textContent=MAP.items.length+' item · world Y + X để spawn';

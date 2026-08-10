@@ -152,12 +152,41 @@ hai. Nên luật "sâu nhất luôn tính" là phần bắt buộc đi kèm, kh�
 
 ### Item (mở rộng, không có trong schema Unity)
 
-| Item | Số lượng | Điểm | Hiệu ứng |
-|---|---|---|---|
-| Booster | 2 | +150 | tốc độ ×1.35 trong 5s + xuyên **2** vật cản |
-| Gift | 1 | +600 | — |
+| Item | Số lượng | Hiệu ứng |
+|---|---|---|
+| Booster | 2 | tốc độ ×1.35 trong 5s + xuyên **2** vật cản |
+| Gift | 1 | **voucher** — vật phẩm, không phải điểm |
 
 Collider item 2.6 × 2.6. Ngân sách boost 2 × 5s / 60s = 17% thời lượng.
+Không item nào cộng điểm — xem mục Tính điểm bên dưới.
+
+---
+
+## Tính điểm
+
+**Điểm = quãng đường đã đi, tính bằng km.** Không có nguồn điểm nào khác.
+
+```
+điểm = dist / 1000        // hiển thị 2 số thập phân
+```
+
+Không có biến `score` trong game state; điểm suy ra từ `G.dist` khi hiển thị. Một
+nguồn sự thật duy nhất nên điểm không thể lệch khỏi quãng đường.
+
+| | Ảnh hưởng tới điểm |
+|---|---|
+| Booster | **gián tiếp** — ×1.35 tốc độ trong 5s ⇒ đi thêm ~42m |
+| Xuyên vật cản khi boost | không cộng gì, chỉ tránh mất quãng đường |
+| Gift | **không** — là voucher, một vật phẩm riêng |
+| Va chạm | giảm điểm vì mất quãng đường (~10m mỗi lần) |
+
+Điểm tối đa lý thuyết là `2.46 km` (2300m chạy sạch + 158m dự phòng boost). Chạy sạch
+không ăn booster là đúng `2.30 km`.
+
+**Cách tính này khớp luôn với server.** `app.ts` xác thực bằng `distance`
+(`distance > allowedMaxDistance` thì trả lỗi), và `app.ts` không có khái niệm điểm nào
+cả. Nên điểm hiển thị cho người chơi và giá trị server kiểm là **cùng một đại lượng** —
+không cần đồng bộ thêm gì, và không có chỗ nào để lệch.
 
 ---
 
@@ -305,8 +334,8 @@ Chạy trên mọi tổ hợp, tất cả tính bằng mét và giây thật.
 | 16 | Ngân sách boost ≤ 20% |
 | 17 | **Cửa sổ boost né được ở 1.35× tốc độ** |
 
-Rule 14 sinh ra từ một lỗi thật: 15 rule đầu đều đạt mà quà vẫn không ai thấy được,
-vì rule 6 chỉ kiểm hình học (*có kịp đổi làn tới quà không*) mà không hỏi câu quan
+Rule 14 sinh ra từ một lỗi thật: 15 rule đầu đều đạt mà voucher vẫn không ai thấy được,
+vì rule 6 chỉ kiểm hình học (*có kịp đổi làn tới nó không*) mà không hỏi câu quan
 trọng hơn — người chơi có **đi tới được chỗ đó** không. Rule 14 mô phỏng quãng đường
 còn lại sau 5 va chạm và yêu cầu mọi item nằm trong đó.
 
@@ -422,7 +451,7 @@ Công thức: `worldY = segment × 32 + 16 + localY`.
 Booster **không** cho bay qua mọi thứ trong 5 giây. Nó cấp:
 
 - tốc độ ×1.35 trong 5 giây
-- **2 lượt xuyên** (`BOOST_PASS`): xuyên qua 2 vật cản đầu tiên, mỗi lần +80 điểm
+- **2 lượt xuyên** (`BOOST_PASS`): xuyên qua 2 vật cản đầu tiên
 
 Từ vật cản **thứ 3** trở đi, va vào là **mất luôn effect** và ăn đủ hình phạt như
 bình thường — `collided` 0.6s ở 0.55× tốc độ, hoặc `slipping` nếu là oil. Lượt xuyên

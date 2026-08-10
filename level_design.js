@@ -91,7 +91,13 @@
      Ngưỡng tuyệt đối đơn thuần sẽ cho 0 hit ở ca cone — nên phải có luật "sâu nhất
      luôn tính" đi kèm. */
   const HIT_DEPTH_MIN = 0.5;
-  const BOOST_DUR = 5.0, BOOST_MULT = 1.35, BOOST_SCORE = 150, GIFT_SCORE = 600;
+  /* ĐIỂM = QUÃNG ĐƯỜNG ĐÃ ĐI, tính bằng km. Không có nguồn điểm nào khác.
+     Booster không cộng điểm trực tiếp — nó giúp ghi điểm bằng cách cho đi xa hơn
+     (×1.35 tốc độ), đúng bản chất "phần thưởng giúp chạy xa" chứ không phải cộng số.
+     Gift cũng không cộng điểm: thực tế nó là VOUCHER, một vật phẩm riêng.
+     Cách tính này còn khớp luôn với server: app.ts xác thực bằng `distance`, nên
+     điểm hiển thị và giá trị server kiểm là cùng một đại lượng — không thể lệch. */
+  const BOOST_DUR = 5.0, BOOST_MULT = 1.35;
   /* Booster KHÔNG phải bất tử. Nó cho đi xuyên qua đúng BOOST_PASS vật cản đầu
      tiên; từ vật cản thứ BOOST_PASS+1 trở đi, va vào là mất luôn effect và ăn
      đủ hình phạt va chạm như bình thường. Lý do: bất tử 5s ở P3 là bỏ qua gần
@@ -898,7 +904,7 @@
     SPEED_LEVELS, OBS_MAP, NORMAL_POOL,
     CAR_W, CAR_H, LATERAL_V, LANE_TIME, CAR_LIMIT_X,
     SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT, RECOVER_DUR, HIT_DEPTH_MIN,
-    BOOST_DUR, BOOST_MULT, BOOST_SCORE, GIFT_SCORE, BOOST_PASS, N_BOOST, N_GIFT,
+    BOOST_DUR, BOOST_MULT, BOOST_PASS, N_BOOST, N_GIFT,
     ITEM_W, ITEM_H,
     BASE_DIST, BOOST_RESERVE, NEED_DIST,
     speedAt, distAtTime, timeAtDist,
