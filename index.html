@@ -121,27 +121,67 @@ summary .meta{margin-left:auto;font-family:'Be Vietnam Pro',sans-serif;
 .filter .cnt{font-size:9px;color:#9A93B8;white-space:nowrap}
 
 /* ---------- lưới xếp map bằng tay ---------- */
-.bwgrid-wrap{max-height:420px;overflow:auto}
-.bwgrid-wrap::-webkit-scrollbar{width:7px;height:7px}
+/* ---------- lưới xếp map bằng tay ----------
+   Nguyên tắc: mỗi hàng phải TỰ NÓI được ngữ cảnh của nó — ở giây nào, tốc độ bao
+   nhiêu, cách hàng trước mấy mét, còn mấy làn mở, có né được không. Không có những
+   thông tin đó thì người xếp phải đoán rồi chờ validator báo lỗi. */
+.bwgrid-wrap{max-height:560px;overflow:auto;margin:0 -3px}
+.bwgrid-wrap::-webkit-scrollbar{width:8px;height:8px}
 .bwgrid-wrap::-webkit-scrollbar-thumb{background:#C9BFEB;border-radius:4px}
-#bwGrid{display:table;border-collapse:collapse;font-size:9px}
-.bwrow{display:table-row}
-.bwrow>div{display:table-cell;vertical-align:middle}
-.bwhead{width:66px;padding:0 6px;color:#8C85AC;font-family:'JetBrains Mono',monospace;
-  white-space:nowrap;border-right:1px solid #E4DFF5}
-.bwhead b{color:#5B4B9E}
-.bwcell{width:52px;height:19px;border:1px solid #E8E4F6;cursor:pointer;
-  text-align:center;line-height:19px;user-select:none;background:#FCFBFF;
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff}
-.bwcell:hover{outline:2px solid #8B7BD8;outline-offset:-2px}
+#bwGrid{font-size:9.5px}
+
+/* header dính khi cuộn */
+.bwhrow{position:sticky;top:0;z-index:3;display:flex;align-items:center;
+  background:#F6F4FC;border-bottom:1px solid #D8D0EF;padding:4px 0;
+  font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#8C85AC;font-weight:600}
+
+.bwseg{margin-bottom:3px;border-radius:7px;overflow:hidden;
+  border:1px solid rgba(139,123,216,.16);background:rgba(255,255,255,.6)}
+.bwseg.ph-P1{border-left:3px solid #4C9A6A}
+.bwseg.ph-P2{border-left:3px solid #D4A03C}
+.bwseg.ph-P3{border-left:3px solid #C0392B}
+/* segment trống: làm mờ để mắt bỏ qua, tập trung vào chỗ có vật cản */
+.bwseg.empty{background:rgba(255,255,255,.28);border-style:dashed}
+
+.bwsbar{display:flex;align-items:center;gap:6px;padding:2px 7px;
+  background:rgba(139,123,216,.07);font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:#8C85AC}
+.bwsbar b{color:#5B4B9E;font-family:'Fredoka',sans-serif;font-size:10px}
+.bwsbar .ph{font-family:'Fredoka',sans-serif;font-weight:600;font-size:9px}
+.bwsbar.ph-P1 .ph{color:#2E7D5B}.bwsbar.ph-P2 .ph{color:#A87613}.bwsbar.ph-P3 .ph{color:#A8302A}
+.bwsbar .sp{margin-left:auto;color:#9A93B8}
+
+.bwr{display:flex;align-items:center;gap:0;border-top:1px solid #F0ECFA}
+.bwr:first-of-type{border-top:none}
+.bwr .meta{width:96px;flex:none;padding:0 7px;font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;color:#9A93B8;white-space:nowrap;overflow:hidden}
+.bwr .gap{width:52px;flex:none;text-align:center;font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;color:#9A93B8}
+.bwr .gap.tight{color:#C0392B;font-weight:600}
+.bwr .gap.ok{color:#4C9A6A}
+.bwcell{width:56px;height:22px;flex:none;border:1px solid #EAE6F7;cursor:pointer;
+  text-align:center;line-height:22px;user-select:none;background:#FDFCFF;
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff;
+  transition:background .08s}
+.bwcell:hover{outline:2px solid #8B7BD8;outline-offset:-2px;z-index:2}
 .bwcell.o-fence{background:#D9885E}.bwcell.o-cone{background:#E0B252}
 .bwcell.o-tire{background:#5B8FCC}.bwcell.o-oil{background:#6D5BA6}
 .bwcell.o-booster{background:#8B9EFF}.bwcell.o-gift{background:#E8A0C8}
-/* Ranh giới segment: viền đậm dưới hàng 2 để thấy rõ từng 32m */
-.bwrow.seg-end .bwcell,.bwrow.seg-end .bwhead{border-bottom:2px solid #C9BFEB}
-.bwrow.p-P1 .bwhead{background:#F0FAF5}
-.bwrow.p-P2 .bwhead{background:#FFF9EC}
-.bwrow.p-P3 .bwhead{background:#FDF0F4}
+/* cảnh báo tại chỗ: hàng bịt kín / không né được */
+.bwr.bad .bwcell{box-shadow:inset 0 0 0 1px #C0392B}
+.bwr .flag{margin-left:7px;font-size:8.5px;white-space:nowrap;color:#C0392B;font-weight:600}
+.bwr .open{width:44px;flex:none;text-align:center;font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;color:#9A93B8}
+.bwr .open.one{color:#D4A03C}
+
+/* thanh bút vẽ */
+.bwtools{display:flex;flex-wrap:wrap;gap:4px}
+.bwtools button{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:500;
+  padding:4px 9px;border:1px solid rgba(139,123,216,.3);border-radius:6px;
+  background:#fff;color:#5B4B9E;cursor:pointer;display:flex;align-items:center;gap:5px}
+.bwtools button:hover{border-color:#8B7BD8}
+.bwtools button.on{background:#8B7BD8;color:#fff;border-color:#8B7BD8}
+.bwtools button i{width:9px;height:9px;border-radius:2px;display:inline-block}
 
 /* ---------- sticky table head ---------- */
 .scroll-t{max-height:230px;overflow:auto}
@@ -300,33 +340,48 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
 
 <!-- ────────── TAB · XẾP TAY ────────── -->
 <div class="tabpane" data-pane="build">
+  <!-- 1. Sinh map: nút chính, đặt trên cùng vì đây là điểm bắt đầu thường dùng -->
   <div class="panel panel-sm">
-    <div class="row" style="gap:6px">
-      <button class="btn btn-p" id="bwPlay">▶ Chơi map này</button>
-      <button class="btn btn-s" id="bwLoad">⤓ Nạp từ combo</button>
-      <button class="btn btn-s" id="bwClear">✕ Xoá hết</button>
-      <button class="btn btn-s" id="bwAdd">+8 segment</button>
-      <button class="btn btn-s" id="bwDel">−8 segment</button>
-      <span class="cnt" id="bwInfo"></span>
+    <div class="row" style="gap:6px;align-items:flex-end">
+      <div class="grp" style="flex:1;min-width:0">
+        <label>Tự sinh theo công thức chuẩn</label>
+        <div class="row" style="gap:5px">
+          <button class="btn btn-p" id="bwGen">⚙ Generate</button>
+          <button class="btn btn-s" id="bwLoad">⤓ Nạp combo <b id="bwLoadLbl"></b></button>
+        </div>
+      </div>
+      <div class="grp">
+        <label>Độ khó</label>
+        <div class="seg" id="bwDiff"></div>
+      </div>
     </div>
-    <div class="row" style="margin-top:7px;gap:6px">
-      <div class="grp"><label>Bút vẽ</label><div class="seg" id="bwTool"></div></div>
-      <button class="btn btn-s" id="bwCopy">⧉ Copy JSON</button>
-      <button class="btn btn-s" id="bwPaste">⤒ Dán JSON</button>
-    </div>
-    <div class="hint" style="text-align:left;margin-top:6px">
-      Bấm ô để đặt/xoá · giữ chuột kéo qua nhiều ô · mỗi segment 32m có <b>2 hàng</b>
-      (hàng 1 = localY −8, hàng 2 = +8) × 3 làn
-    </div>
+    <div class="hint" style="text-align:left;margin-top:6px" id="bwGenHint"></div>
   </div>
 
-  <div class="panel" id="bwValidPanel">
+  <!-- 2. Strip thống kê: đọc được trạng thái map trong một cái nhìn -->
+  <div class="strip" id="bwStrip"></div>
+
+  <!-- 3. Validator: lỗi phải thấy trước khi cuộn xuống lưới -->
+  <div class="panel">
     <h2>Kiểm tra <span class="meta" id="bwValidMeta"></span></h2>
     <div class="body"><table id="bwValidTable"></table></div>
   </div>
 
+  <!-- 4. Công cụ vẽ + lưới -->
   <div class="panel">
-    <h2>Lưới xếp map</h2>
+    <div class="row" style="gap:6px;margin-bottom:7px">
+      <button class="btn btn-p" id="bwPlay">▶ Chơi map này</button>
+      <button class="btn btn-s" id="bwClear">✕ Xoá hết</button>
+      <button class="btn btn-s" id="bwAdd">+8 seg</button>
+      <button class="btn btn-s" id="bwDel">−8 seg</button>
+      <button class="btn btn-s" id="bwCopy">⧉ Copy</button>
+      <button class="btn btn-s" id="bwPaste">⤒ Dán</button>
+    </div>
+    <div class="bwtools" id="bwTool"></div>
+    <div class="hint" style="text-align:left;margin:7px 0 5px">
+      Bấm ô để đặt · bấm lại để xoá · giữ chuột kéo qua nhiều ô ·
+      cột <b>Δ</b> là khoảng cách tới hàng có vật cản trước đó
+    </div>
     <div class="bwgrid-wrap"><div id="bwGrid"></div></div>
   </div>
 </div>
@@ -430,7 +485,7 @@ const {
   SLIP_DUR, COLLIDE_DUR, COLLIDE_MULT, RECOVER_DUR, HIT_DEPTH_MIN,
   BOOST_DUR, BOOST_MULT, BOOST_PASS, N_BOOST,
   ITEM_W, ITEM_H,
-  BASE_DIST, BOOST_RESERVE,
+  BASE_DIST, BOOST_RESERVE, MIN_ROW_GAP_TIME,
   speedAt, distAtTime, timeAtDist,
   PHASE_DEF,
   buildMap, rowsOf, validate, lintLibrary, testAllCombos
@@ -1498,11 +1553,18 @@ document.getElementById('btnDownJson').onclick=()=>{
 const BW={
  tools:['fence','cone','tire','oil','booster','gift','erase'],
  tool:'fence',
+ diffs:['Dễ','Chuẩn','Khó'],
+ diff:'Chuẩn',
  grid:[],
  active:false,          // đang chơi map tự xếp thay vì map A/B/C
  paint:null             // giá trị đang tô khi kéo chuột (giữ nhất quán cả nét kéo)
 };
 const BW_LABEL={fence:'fen',cone:'con',tire:'tir',oil:'oil',booster:'⚡',gift:'🎁',erase:''};
+const BW_DIFF_DESC={
+ 'Dễ':'Bỏ ~35% vật cản khỏi map chuẩn, ưu tiên bỏ ở hàng dày. Vẫn giữ item và oil.',
+ 'Chuẩn':'Ghép 3 phase A/B/C ngẫu nhiên qua đúng compiler của <code>level_design.js</code> — kết quả luôn đạt 17/17 rule.',
+ 'Khó':'Thêm vật cản đơn vào các segment trống ở P2/P3, giữ mọi hàng vẫn né được.'
+};
 
 function bwBlank(nSeg){
  const g=[];
@@ -1517,6 +1579,79 @@ function bwFromMap(M){
  }));
  return g;
 }
+/* ---- GENERATE theo công thức chuẩn ----
+   Không viết công thức riêng: ghép 3 phase từ thư viện A/B/C đã qua compiler của
+   level_design.js, nên map sinh ra giống hệt map thật và luôn đạt 17/17 rule.
+   Hai mức Dễ/Khó chỉ TINH CHỈNH kết quả đó, và mỗi bước chỉnh đều kiểm lại
+   validator — chỉ nhận thay đổi nào không làm map hỏng. */
+const bwPick=arr=>arr[Math.floor(Math.random()*arr.length)];
+
+function bwGenerate(){
+ const sel={P1:bwPick(['A','B','C']),P2:bwPick(['A','B','C']),P3:bwPick(['A','B','C'])};
+ BW.grid=bwFromMap(buildMap(sel));
+ BW.genSel=sel;
+ if(BW.diff==='Chuẩn')return sel;
+
+ /* Thử một thay đổi; nếu validator xấu đi thì hoàn lại.
+    "Xấu đi" = số rule fail tăng. Nhờ vậy Dễ/Khó không bao giờ tạo map hỏng. */
+ const nBad=()=>validate(bwBuildMap()).filter(x=>!x[0]).length;
+ const tryEdit=(s,r,l,val)=>{
+  const old=BW.grid[s][r][l];
+  if(old===val)return false;
+  const before=nBad();
+  BW.grid[s][r][l]=val;
+  if(nBad()>before){BW.grid[s][r][l]=old;return false}
+  return true;
+ };
+
+ const b1=PHASE_DEF[0].len,b2=b1+PHASE_DEF[1].len;
+ if(BW.diff==='Dễ'){
+  /* Bỏ vật cản, ưu tiên hàng có 2 vật cản (gate) vì đó là chỗ ngột nhất.
+     Không bỏ oil/item — chúng là nhịp thiết kế, bỏ đi sẽ lệch rule 10/11. */
+  const cands=[];
+  BW.grid.forEach((sg,s)=>{
+   for(let r=0;r<2;r++){
+    const solid=[0,1,2].filter(l=>sg[r][l]&&sg[r][l]!=='oil'
+      &&sg[r][l]!=='booster'&&sg[r][l]!=='gift');
+    solid.forEach(l=>cands.push({s,r,l,w:solid.length}));
+   }
+  });
+  cands.sort((a,b)=>b.w-a.w||Math.random()-.5);
+  const target=Math.floor(cands.length*0.35);
+  let done=0;
+  for(const c of cands){
+   if(done>=target)break;
+   if(tryEdit(c.s,c.r,c.l,null))done++;
+  }
+ } else if(BW.diff==='Khó'){
+  /* Thêm vật cản ở P2/P3. Chỉ thêm 1 làn mỗi hàng để không tạo gate mới —
+     gate cần hàng sau trống, thêm bừa sẽ phá rule khoảng cách.
+     Quét CẢ hàng đã có 1 vật cản (không chỉ segment trống): map chuẩn chỉ còn
+     ~5 segment trống ở P2/P3 nên nếu chỉ nhắm segment trống thì hầu như không
+     thêm được gì — đo được đúng 1 vật cản, tức mức Khó vô nghĩa. */
+  const pool=['fence','cone','tire'];
+  const spots=[];
+  for(let s=b1;s<BW.grid.length;s++)
+   for(let r=0;r<2;r++){
+    const row=BW.grid[s][r];
+    const n=row.filter(Boolean).length;
+    if(n>=2)continue;                              // đã là gate, không thêm
+    if(row.some(c=>c==='oil'||c==='booster'||c==='gift'))continue;
+    const free=[0,1,2].filter(l=>!row[l]);
+    if(free.length)spots.push({s,r,free,w:n});     // ưu tiên hàng đang trống
+   }
+  spots.sort((a,b)=>a.w-b.w||Math.random()-.5);
+  let added=0;
+  const want=Math.ceil(spots.length*0.45);
+  for(const sp of spots){
+   if(added>=want)break;
+   const l=sp.free[Math.floor(Math.random()*sp.free.length)];
+   if(tryEdit(sp.s,sp.r,l,pool[(sp.s*7+sp.r*3+l)%3]))added++;
+  }
+ }
+ return sel;
+}
+
 /* Dựng cấu trúc MAP giống buildMap() để dùng lại validate/rowsOf/renderer.
     Phase suy theo mốc segment của PHASE_DEF, cắt theo độ dài lưới hiện tại. */
 function bwBuildMap(){
@@ -1559,27 +1694,89 @@ function bwBuildMap(){
   sel:{P1:'—',P2:'—',P3:'—'}};
 }
 
+/* Phân tích lưới thành thông tin PER-ROW để hiển thị ngữ cảnh:
+   khoảng cách tới hàng đặc trước đó, số làn mở, có né được không.
+   Dùng đúng phép tính của validate() nên hai bên không thể lệch nhau. */
+function bwAnalyze(){
+ const info=[];               // info[seg][row] = {...}
+ let prev=null;               // hàng ĐẶC gần nhất phía trước
+ BW.grid.forEach((sg,i)=>{
+  info.push([null,null]);
+  for(let r=0;r<2;r++){
+   const wy=i*SEG_H+SEG_H/2+(r===0?-8:8);
+   const blocked=[],items=[];
+   for(let l=0;l<3;l++){
+    const id=sg[r][l];
+    if(!id)continue;
+    if(id==='booster'||id==='gift')items.push(l); else blocked.push(l);
+   }
+   const open=[0,1,2].filter(l=>blocked.indexOf(l)<0);
+   const t=timeAtDist(wy),v=speedAt(Math.min(t,GAME_TIME));
+   const rec={wy,t,v,blocked,items,open,gap:null,dt:null,hop:null,ok:true,why:''};
+   if(blocked.length){
+    if(!open.length){rec.ok=false;rec.why='bịt kín 3 làn'}
+    if(prev){
+     rec.gap=wy-prev.wy;
+     rec.dt=rec.gap/v;
+     let hop=9;
+     prev.open.forEach(a=>rec.open.forEach(b=>{hop=Math.min(hop,Math.abs(a-b))}));
+     rec.hop=rec.open.length?hop:null;
+     if(rec.ok&&hop*LANE_TIME>rec.dt+0.02){
+      rec.ok=false;rec.why=`cần ${(hop*LANE_TIME).toFixed(2)}s > ${rec.dt.toFixed(2)}s`;
+     } else if(rec.ok&&rec.dt<MIN_ROW_GAP_TIME-1e-9){
+      rec.ok=false;rec.why=`chỉ ${rec.dt.toFixed(2)}s < ${MIN_ROW_GAP_TIME}s`;
+     }
+    }
+    prev=rec;
+   }
+   info[i][r]=rec;
+  }
+ });
+ return info;
+}
+
 function renderBwGrid(){
  const el=document.getElementById('bwGrid');
  if(!el)return;
  const b1=PHASE_DEF[0].len,b2=b1+PHASE_DEF[1].len;
- let h='<div class="bwrow"><div class="bwhead">seg · y · t</div>'
-  +'<div class="bwhead" style="width:52px;text-align:center;border:none">L</div>'
-  +'<div class="bwhead" style="width:52px;text-align:center;border:none">C</div>'
-  +'<div class="bwhead" style="width:52px;text-align:center;border:none">R</div></div>';
+ const info=bwAnalyze();
+ let h='<div class="bwhrow"><span style="width:96px;padding:0 7px">seg · worldY · giây</span>'
+  +'<span style="width:52px;text-align:center">Δ</span>'
+  +'<span style="width:56px;text-align:center">L</span>'
+  +'<span style="width:56px;text-align:center">C</span>'
+  +'<span style="width:56px;text-align:center">R</span>'
+  +'<span style="width:44px;text-align:center">mở</span></div>';
  BW.grid.forEach((sg,i)=>{
   const ph=i<b1?'P1':i<b2?'P2':'P3';
+  const nObs=info[i].reduce((a,r)=>a+r.blocked.length+r.items.length,0);
+  const v=speedAt(Math.min(timeAtDist(i*SEG_H),GAME_TIME));
+  h+=`<div class="bwseg ph-${ph}${nObs?'':' empty'}">`
+   +`<div class="bwsbar ph-${ph}"><b>#${i}</b><span class="ph">${ph}</span>`
+   +`<span>${i*SEG_H}m</span><span>${timeAtDist(i*SEG_H).toFixed(1)}s</span>`
+   +`<span class="sp">${v.toFixed(0)} m/s${nObs?'':' · trống'}</span></div>`;
   for(let r=0;r<2;r++){
-   const wy=i*SEG_H+SEG_H/2+(r===0?-8:8);
-   h+=`<div class="bwrow p-${ph}${r===1?' seg-end':''}">`
-    +`<div class="bwhead"><b>${i}</b>·${wy}m·${timeAtDist(wy).toFixed(1)}s</div>`;
+   const R=info[i][r];
+   /* Δ: khoảng cách tới hàng đặc trước. Tô đỏ khi dưới ngưỡng an toàn ở tốc độ đó */
+   let gapTxt='—',gapCls='';
+   if(R.gap!=null){
+    gapTxt=R.gap+'m';
+    gapCls=R.dt<MIN_ROW_GAP_TIME-1e-9?' tight':' ok';
+    gapTxt+=`<br><span style="font-size:8px">${R.dt.toFixed(2)}s</span>`;
+   }
+   h+=`<div class="bwr${R.ok?'':' bad'}">`
+    +`<div class="meta">y ${R.wy>0?'+':''}${r===0?'−8':'+8'} · ${R.wy}m · ${R.t.toFixed(1)}s</div>`
+    +`<div class="gap${gapCls}">${gapTxt}</div>`;
    for(let l=0;l<3;l++){
     const id=sg[r][l];
     h+=`<div class="bwcell${id?' o-'+id:''}" data-s="${i}" data-r="${r}" data-l="${l}"`
-     +`>${id?BW_LABEL[id]:''}</div>`;
+     +` title="segment ${i} · hàng ${r+1} · làn ${'LCR'[l]}">${id?BW_LABEL[id]:''}</div>`;
    }
-   h+='</div>';
+   const oc=R.blocked.length?R.open.length:'';
+   h+=`<div class="open${R.open.length===1&&R.blocked.length?' one':''}">${oc}</div>`
+    +(R.ok?'':`<span class="flag">⚠ ${R.why}</span>`)
+    +'</div>';
   }
+  h+='</div>';
  });
  el.innerHTML=h;
 }
@@ -1587,8 +1784,20 @@ function renderBwGrid(){
 function renderBwTools(){
  const el=document.getElementById('bwTool');
  if(!el)return;
- el.innerHTML=BW.tools.map(t=>
-  `<button data-bwtool="${t}" class="${BW.tool===t?'on':''}">${t==='erase'?'✕ xoá':t}</button>`).join('');
+ const col={fence:'#D9885E',cone:'#E0B252',tire:'#5B8FCC',oil:'#6D5BA6',
+   booster:'#8B9EFF',gift:'#E8A0C8'};
+ el.innerHTML=BW.tools.map(t=>{
+  const lbl=t==='erase'?'✕ xoá':t==='booster'?'⚡ booster':t==='gift'?'🎁 gift':t;
+  const sw=col[t]?`<i style="background:${col[t]}"></i>`:'';
+  return `<button data-bwtool="${t}" class="${BW.tool===t?'on':''}">${sw}${lbl}</button>`;
+ }).join('');
+ const d=document.getElementById('bwDiff');
+ if(d)d.innerHTML=BW.diffs.map(x=>
+  `<button data-bwdiff="${x}" class="${BW.diff===x?'on':''}">${x}</button>`).join('');
+ const ll=document.getElementById('bwLoadLbl');
+ if(ll)ll.textContent=`${SEL.P1}-${SEL.P2}-${SEL.P3}`;
+ const gh=document.getElementById('bwGenHint');
+ if(gh)gh.innerHTML=BW_DIFF_DESC[BW.diff];
 }
 
 function refreshBw(){
@@ -1605,9 +1814,28 @@ function refreshBw(){
  meta.innerHTML=bad
   ? `<span class="badge b-err">${bad} lỗi</span>`
   : `<span class="badge b-ok">✓ ${v.length}/${v.length}</span>`;
+
+ /* Strip thống kê: mật độ theo phase là số quan trọng nhất khi xếp tay,
+    vì rule 9 đòi P1 < P2 < P3 mà mắt thường không đoán được. */
  const nObs=M.segs.reduce((a,s)=>a+s.obstacles.filter(o=>o.t!=='booster'&&o.t!=='gift').length,0);
- document.getElementById('bwInfo').textContent=
-  `${BW.grid.length} segment · ${BW.grid.length*SEG_H}m · ${nObs} vật cản · ${M.items.length} item`;
+ const rows=rowsOf(M.segs).filter(r=>r.lanes.length>0);
+ const dens=['P1','P2','P3'].map(p=>{
+  const g=M.segs.filter(s=>s.phase===p);
+  if(!g.length)return 0;
+  const n=g.reduce((a,s)=>a+s.obstacles.filter(o=>o.t!=='booster'&&o.t!=='gift').length,0);
+  const t0=timeAtDist(g[0].dist),t1=timeAtDist(g[g.length-1].dist+SEG_H);
+  return n/Math.max(.01,t1-t0);
+ });
+ const rising=dens[0]<dens[1]&&dens[1]<dens[2];
+ const empty=M.segs.filter(s=>!s.obstacles.length).length;
+ document.getElementById('bwStrip').innerHTML=`
+ <div class="stat"><label>Segment</label><div class="v">${BW.grid.length}<small> · ${BW.grid.length*SEG_H}m</small></div></div>
+ <div class="stat"><label>Vật cản</label><div class="v">${nObs}<small> · ${rows.length} hàng</small></div></div>
+ <div class="stat"><label>Trống</label><div class="v">${empty}<small> segment</small></div></div>
+ <div class="stat ${rising?'ok':'err'}"><label>Mật độ obs/s</label>
+   <div class="v" style="font-size:11px">${dens.map(d=>d.toFixed(2)).join(' → ')}</div></div>
+ <div class="stat ${bad?'err':'ok'}"><label>Validator</label>
+   <div class="v">${bad?bad+' lỗi':'✓ '+v.length+'/'+v.length}</div></div>`;
  document.getElementById('tnBuild').textContent=bad?bad+'!':'';
  return M;
 }
@@ -1646,6 +1874,22 @@ function refreshBw(){
   BW.tool=b.dataset.bwtool;
   renderBwTools();
  });
+ document.getElementById('bwDiff').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-bwdiff]');
+  if(!b)return;
+  BW.diff=b.dataset.bwdiff;
+  renderBwTools();
+ });
+ document.getElementById('bwGen').onclick=()=>{
+  const sel=bwGenerate();
+  refreshBw();
+  const bad=validate(bwBuildMap()).filter(x=>!x[0]).length;
+  document.getElementById('bwGenHint').innerHTML=
+   `Đã sinh map <b>${sel.P1}-${sel.P2}-${sel.P3}</b> · mức <b>${BW.diff}</b> · `
+   +(bad?`<span style="color:#8F2A2A">còn ${bad} lỗi</span>`
+        :`<span style="color:#1B6B51">đạt toàn bộ 17 rule</span>`)
+   +` — bấm Generate lại để lấy tổ hợp khác`;
+ };
  document.getElementById('bwClear').onclick=()=>{BW.grid=bwBlank(BW.grid.length);refreshBw()};
  document.getElementById('bwLoad').onclick=()=>{BW.grid=bwFromMap(buildMap(SEL));refreshBw()};
  document.getElementById('bwAdd').onclick=()=>{BW.grid=BW.grid.concat(bwBlank(8));refreshBw()};
@@ -1667,7 +1911,8 @@ function refreshBw(){
  };
  document.getElementById('bwCopy').onclick=()=>{
   navigator.clipboard&&navigator.clipboard.writeText(JSON.stringify(BW.grid));
-  document.getElementById('bwInfo').textContent='đã copy JSON lưới';
+  document.getElementById('bwGenHint').textContent=
+   `Đã copy JSON lưới (${BW.grid.length} segment) vào clipboard`;
  };
  document.getElementById('bwPaste').onclick=()=>{
   const s=prompt('Dán JSON lưới đã copy:');
