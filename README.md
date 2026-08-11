@@ -30,7 +30,7 @@ Mở `index.html` để xem chỉ số và chơi thử. Không cần server.
 | `unity_patterns.js` | Pattern pool 32 mẫu, luật R1–R4, mô phỏng pipeline Unity |
 | `export_unity.js` | Sinh `road_path_patterns.json` + `items.json` |
 | `check_levels.js` | Lint thư viện + kiểm 27 tổ hợp |
-| `index.html` | Bảng chỉ số + chơi thử (dùng chung 2 module trên) |
+| `index.html` | Bảng chỉ số + tab xếp map bằng tay + chơi thử |
 | `road_path_patterns.json` | **File Unity đọc** — do exporter ghi ra |
 | `items.json` | Booster/gift theo `distanceY` (sinh bởi `--items`) |
 | `app.ts`, `init_data.json` | Server + config game |
@@ -63,7 +63,12 @@ chỉ kiểm cận trên.
 | Biên di chuyển | ±5.25m (`CarLimitX`) |
 | Segment | 32m × 16m |
 | Xe | 2.49 × 3.965, BoxCollider2D offset 0 |
-| Tốc độ ngang | 14 m/s ⇒ đổi 1 làn = **0.25s** |
+| Tốc độ ngang | 22 m/s ⇒ đổi 1 làn = **0.159s** |
+
+Tốc độ ngang là lựa chọn của client, **không** phải ràng buộc server. `app.ts` chỉ giới
+hạn `MAX_LATERAL_DELTA_PER_SNAPSHOT = 3.75m` trên mỗi snapshot 1m **đi tới**. Ở tốc độ
+thấp nhất 20 m/s, 1m dọc mất 0.05s ⇒ trần lý thuyết là 75 m/s ngang. Với 22 m/s, dịch
+ngang thực tế cao nhất là 1.10m/1m dọc — dưới 30% ngưỡng.
 
 ### Tốc độ theo thời gian
 
@@ -230,26 +235,30 @@ buộc vì Unity bốc pattern **độc lập từng segment**, không biết se
 
 ### Ngân sách thời gian
 
-Đổi một làn mất 0.25s. Số làn tối đa dịch được:
+Thời gian có được giữa hai hàng, theo khoảng cách và tốc độ:
 
 | Khoảng cách | @20 | @30 | @40 | @45 | @50 |
 |---|---|---|---|---|---|
-| **16m** | 0.80s · 3 làn | 0.53s · 2 làn | 0.40s · 1 làn | 0.36s · 1 làn | 0.32s · 1 làn |
-| **32m** | 1.60s · 6 làn | 1.07s · 4 làn | 0.80s · 3 làn | 0.71s · 2 làn | 0.64s · 2 làn |
+| **16m** | 0.80s | 0.53s | 0.40s | 0.36s | 0.32s |
+| **32m** | 1.60s | 1.07s | 0.80s | 0.71s | 0.64s |
 
-Ở tốc độ cuối, 16m chỉ đủ dịch **một** làn. Đây là lý do gate (chặn 2 làn, mở 1) bắt
-buộc để hàng sau trống, tức hàng kế tiếp cách 32m.
+**Ngưỡng `MIN_ROW_GAP_TIME = 0.35s`.** Đủ thời gian *dịch làn* không có nghĩa là chơi
+được — người chơi còn phải **nhận biết** hàng tiếp theo và quyết định. 0.35s là 21 frame
+ở 60fps, trong đó việc đổi làn chỉ chiếm 0.159s.
 
-**Biên an toàn `REACT_MARGIN = 1.4`.** Đủ thời gian về hình học không có nghĩa là chơi
-được: 16m @50 m/s cho 0.32s, đổi làn cần 0.25s, dư 0.07s — 4 frame ở 60fps, không kịp
-nhận biết. Map đòi mỗi hàng có ≥ `1.4 × 0.25 = 0.35s`. Từ đó ra tốc độ tối đa mà hàng
-16m còn dùng được:
+Đây là ngưỡng **tuyệt đối**, không phải hệ số nhân thời gian đổi làn. Bản trước dùng
+`LANE_TIME × 1.4`, nên khi tăng tốc độ ngang từ 14 lên 22 m/s thì ngưỡng tự tụt từ 0.35s
+xuống 0.22s và auto-widen tắt hẳn — mất một lớp bảo vệ mà không ai thấy. Thời gian phản
+ứng của người chơi không phụ thuộc xe dịch nhanh bao nhiêu, nên nó phải là hằng số.
+
+Từ ngưỡng đó suy ra tốc độ tối đa mà hàng 16m còn dùng được:
 
 ```
-16 / (0.25 × 1.4) = 45.7 m/s   →  khoảng giây 47 trở đi
+16 / 0.35 = 45.7 m/s   →  khoảng giây 47 trở đi
 ```
 
 Sau mốc này mọi hàng có vật cản buộc phải cách 32m. Compiler tự lo (xem *auto-widen*).
+Đây cũng là lý do gate (chặn 2 làn, mở 1) luôn để hàng sau trống.
 
 Cũng vì vậy pattern 4–5 vật cản đặt ở y = −11/−3/+3/+11 **không dùng được**: hàng cách
 nhau 6–8m, tức 0.12–0.16s ở P3.
@@ -373,7 +382,7 @@ Chạy trên mọi tổ hợp, tất cả tính bằng mét và giây thật.
 | # | Rule |
 |---|---|
 | 1 | Hàng đúng lattice 16m |
-| 2 | Reaction ≥ 1.4× thời gian đổi làn (chỉ xét trong 2300m thực) |
+| 2 | Khoảng cách hàng ≥ 0.35s (chỉ xét trong 2300m thực) |
 | 3 | Luôn còn ≥1 làn mở |
 | 4 | Mọi hàng đều né được (số làn phải dịch vs thời gian có) |
 | 5 | Runway sau oil ≥ 1s |
@@ -509,13 +518,40 @@ Mở `index.html`. Cột trái là dữ liệu, cột phải là chơi thử.
 |---|---|
 | **Map** | Strip thống kê, sơ đồ map, validator, item placement, obstacle, spawn list |
 | **Thiết kế** | Phase/difficulty curve, variant library, speed levels, config đầy đủ |
+| **Xếp tay** | Lưới xếp map thủ công + validator trực tiếp (xem dưới) |
 | **Unity Export** | Pattern pool (sơ đồ + toạ độ), tier, luật pool, JSON preview |
 
 Bảng dài có ô lọc và header dính khi cuộn. Bảng pattern hiện sơ đồ 3 làn × 2 hàng kèm
 toạ độ `x, y` đúng thứ tự Unity sort, copy vào là khớp. Panel Unity Export có nút
 **Lint**, **Mô phỏng 500 seed**, **Copy JSON**, **Tải file**.
 
-Thông số luật chơi (điểm, thời gian phạt, ramp, boost) hiện ngay dưới khung game.
+Thông số luật chơi (điểm, thời gian phạt, ramp, boost, độ nhạy lái) hiện ngay dưới khung
+game.
+
+### Tab Xếp tay
+
+Lưới `segment × 2 hàng × 3 làn`. Bấm ô để đặt vật cản, giữ chuột kéo qua nhiều ô để tô
+nhanh. Bấm lại đúng loại đang chọn thì xoá, không cần đổi sang bút xoá.
+
+| Nút | Việc |
+|---|---|
+| **▶ Chơi map này** | đưa map tự xếp vào khung chơi thử bên phải |
+| **⤓ Nạp từ combo** | nạp map A/B/C hiện tại vào lưới để sửa tiếp |
+| **✕ Xoá hết** | về lưới trống |
+| **+8 / −8 segment** | đổi độ dài map (tối thiểu 8) |
+| **⧉ Copy / ⤒ Dán JSON** | lưu và chia sẻ bố cục |
+
+Header mỗi hàng hiện `segment · worldY · thời gian`, nền phân màu theo phase, viền đậm
+đánh dấu ranh giới mỗi 32m.
+
+Map tự xếp **không đi qua compiler** — compiler tự sửa nên sẽ ghi đè ý người dùng. Thay
+vào đó nó chạy qua **cùng hàm `validate()`** với map tự sinh, nên lỗi được báo bằng đúng
+17 rule và cập nhật ngay khi nhả chuột. Lỗi được sắp lên đầu bảng. Số lỗi cũng hiện trên
+nhãn tab.
+
+Không có ràng buộc nào bị nới cho map tự xếp: bịt kín 3 làn, hai hàng 16m ở P3, item quá
+xa — tất cả đều bị bắt như map tự sinh. Nút "Chơi map này" **không** kiểm lỗi trước, để
+bạn thử map chưa hoàn thiện mà cảm nhận.
 
 ### Chơi thử
 
@@ -528,10 +564,15 @@ Thông số luật chơi (điểm, thời gian phạt, ramp, boost) hiện ngay 
 | `P` hoặc `Esc` | Pause / Resume |
 | `✕` | thoát phiên chơi, mở lại bảng dữ liệu |
 
-Khi kéo, xe vẫn bị giới hạn `LATERAL_V = 14 m/s` và biên `±5.25m` đúng như Unity. Drag
+Khi kéo, xe vẫn bị giới hạn `LATERAL_V = 22 m/s` và biên `±5.25m` đúng như Unity. Drag
 chỉ đặt **đích đến**, xe đi tới đích qua cùng phép giới hạn tốc độ như khi bấm phím —
 nên không thể lách qua vật cản nhanh hơn mức validator dùng để kiểm map. Nhả tay thì xe
 snap về làn gần **đích** nhất, không phải gần vị trí hiện tại.
+
+**Độ nhạy kéo `DRAG_GAIN = 1.8`**: vuốt 1px màn hình cho ra 1.8px thế giới. Ở tỉ lệ 1:1
+phải vuốt gần hết chiều rộng canvas mới đi từ làn trái sang phải, cảm giác lết; với 1.8
+chỉ cần ~217px trên canvas 390px. Hệ số này chỉ đặt **đích**, không đổi tốc độ ngang thực
+tế nên không ảnh hưởng anti-cheat.
 
 Bấm tiếp tục sau pause sẽ **đếm ngược 3 giây**; đồng hồ game không chạy trong lúc đếm.
 Đếm ngược dùng thời gian thực, không phải fixed timestep. Đổi biến thể A/B/C thì dựng map
@@ -579,7 +620,7 @@ Map hợp lệ không có nghĩa là dễ chịu. Ba số này quyết định c
 
 | Số đo | Ý nghĩa | Hiện tại |
 |---|---|---|
-| Slack tối thiểu | thời gian dư sau khi đã đổi làn xong | **0.118s** (7 frame @60fps) |
+| Slack tối thiểu | thời gian dư sau khi đã đổi làn xong | **0.209s** (13 frame @60fps) |
 | Tỉ lệ hàng 16m | hàng chỉ cách hàng trước 16m | **32%** |
 | Hàng chỉ 1 làn mở | không có lựa chọn, buộc vào đúng một chỗ | **30%** |
 
@@ -588,7 +629,7 @@ Phân bố khoảng cách giữa các hàng (A-A-A): 16m × 19 · 32m × 31 · 4
 
 Nếu map trở nên khó di chuyển, ba đòn hiệu quả nhất theo thứ tự:
 
-1. Tăng `REACT_MARGIN` (hiện 1.4) — buộc mọi hàng giãn ra ở tốc độ cao
+1. Tăng `MIN_ROW_GAP_TIME` (hiện 0.35s) — buộc mọi hàng giãn ra ở tốc độ cao
 2. Thay `gsx` bằng chuỗi `gt` liên tiếp — vẫn 2 vật cản/segment nhưng hàng cách 32m,
    tăng áp lực không bằng cách bóp thời gian phản xạ
 3. Giảm tỉ lệ hàng chỉ 1 làn mở, bằng cách đổi một số `gt` thành `sg` hoặc `wv`

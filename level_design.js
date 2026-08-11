@@ -47,15 +47,32 @@
   const NORMAL_POOL = ['fence', 'cone', 'tire'];
 
   const CAR_W = 2.49, CAR_H = 3.965;
-  const LATERAL_V = 14;                        // m/s dịch ngang
+  /* Tốc độ dịch ngang. 22 m/s ⇒ đổi 1 làn = 3.5/22 = 0.159s.
+     Trước là 14 m/s (0.25s/làn) — kéo chuột cảm giác xe lết vì mỗi frame chỉ dịch
+     0.233m, con trỏ luôn đi trước xe.
+
+     Server KHÔNG chặn con số này: app.ts giới hạn dịch ngang
+     MAX_LATERAL_DELTA_PER_SNAPSHOT = 3.75m trên mỗi snapshot 1m ĐI TỚI. Ở tốc độ
+     thấp nhất 20 m/s, 1m dọc mất 0.05s ⇒ trần lý thuyết 75 m/s ngang. 22 m/s còn
+     xa ngưỡng đó, và kiểm chứng bằng test: dịch ngang tối đa/1m dọc = 1.10m ở P1,
+     0.44m ở P3 — đều dưới 3.75m.
+
+     Đổi giá trị này làm MỌI ràng buộc map dễ hơn (LANE_TIME nhỏ hơn ⇒ cần ít thời
+     gian hơn để né), nên map cũ vẫn hợp lệ. Nhưng nó cũng nới REACT_MARGIN thực tế,
+     vì vậy validator được siết lại bên dưới để độ khó không tụt. */
+  const LATERAL_V = 22;                        // m/s dịch ngang
   const CAR_LIMIT_X = 5.25;                    // biên đường (app.ts CarLimitX)
   const LANE_TIME = LANE_W / LATERAL_V;        // 0.25s
-  /* Hệ số an toàn cho hàng gần nhất.
-       1.15 → đòi 0.29s, cho slack chỉ 0.07s ở 50 m/s = 4 frame @60fps, quá gắt.
-       1.60 → đòi 0.40s, buộc MỌI hàng ở P3 cách 32m, làm mật độ P3 tụt dưới P2.
-       1.40 → đòi 0.35s: hàng 16m dùng được tới ~45 m/s, sau đó phải giãn 32m.
-              Cho slack ~0.11s (7 frame) ở chỗ chặt nhất. */
-  const REACT_MARGIN = 1.4;
+  /* Thời gian TỐI THIỂU giữa hai hàng vật cản liền nhau, tính bằng giây thật.
+     Đây là NGƯỠNG TUYỆT ĐỐI, không phải hệ số nhân LANE_TIME. Lý do: thời gian
+     người chơi cần để NHẬN BIẾT hàng tiếp theo và bắt đầu phản ứng không phụ thuộc
+     xe dịch ngang nhanh bao nhiêu. Bản trước dùng `LANE_TIME × 1.4`, nên khi tăng
+     LATERAL_V từ 14 lên 22 m/s thì ngưỡng tự tụt từ 0.35s xuống 0.22s và auto-widen
+     tắt hẳn — mất một lớp bảo vệ mà không ai thấy.
+
+     0.35s = 21 frame @60fps: đủ để mắt thấy, quyết định, và hoàn tất việc đổi làn
+     (0.159s ở 22 m/s). Giữ đúng giá trị hiệu lực của bản trước (1.4 × 0.25 = 0.35). */
+  const MIN_ROW_GAP_TIME = 0.35;
 
   const SLIP_DUR = 1.0;
   /* Hình phạt va chạm.
@@ -229,13 +246,13 @@
   const seq = (...xs) => [].concat.apply([], xs);
 
   /* ------------------------------------------------- AUTO-WIDEN (theo tốc độ)
-     Tốc độ tối đa mà hai hàng cách ROW_GAP vẫn đủ REACT_MARGIN:
-       16 / (0.25 × 1.4) = 45.7 m/s  ⇒  từ khoảng giây 47 trở đi (P3 nửa sau)
+     Tốc độ tối đa mà hai hàng cách ROW_GAP vẫn đủ MIN_ROW_GAP_TIME:
+       16 / 0.35 = 45.7 m/s  ⇒  từ khoảng giây 47 trở đi (P3 nửa sau)
      mọi hàng có vật cản BẮT BUỘC phải cách 32m.
      Thay vì bắt designer nhớ ngưỡng này và tự chọn khối "giãn", compiler tự tách
      segment có cả hai hàng đặc thành 2 segment khi segment đó nằm ở vùng tốc độ
      cao. Designer chỉ viết nhịp mong muốn (wv, gt, oil…) cho cả 3 phase.        */
-  const SAFE_ROW_SPEED = ROW_GAP / (LANE_TIME * REACT_MARGIN);
+  const SAFE_ROW_SPEED = ROW_GAP / MIN_ROW_GAP_TIME;
 
   /* hàng "đặc" = có vật cản chặn (block hoặc oil). Hàng chỉ chứa item không tính. */
   const isSolidRow = r => !!r && !r.item;
@@ -582,8 +599,8 @@
       const dt = (obsRows[i].y - obsRows[i - 1].y) / speedAt(obsRows[i].time);
       if (dt < minDt) { minDt = dt; minAt = obsRows[i].time; }
     }
-    out.push([minDt >= LANE_TIME * REACT_MARGIN, 'Reaction ≥ ' + REACT_MARGIN + '× thời gian đổi làn',
-      'min ' + minDt.toFixed(2) + 's @' + minAt.toFixed(0) + 's · cần ' + (LANE_TIME * REACT_MARGIN).toFixed(2) + 's']);
+    out.push([minDt >= MIN_ROW_GAP_TIME - 1e-9, 'Khoảng cách hàng ≥ ' + MIN_ROW_GAP_TIME + 's',
+      'min ' + minDt.toFixed(2) + 's @' + minAt.toFixed(0) + 's · cần ' + MIN_ROW_GAP_TIME + 's']);
 
     // 3. không bịt kín 3 làn
     const full = rows.filter(r => new Set(r.lanes).size >= 3).map(r => r.y | 0);
@@ -654,7 +671,7 @@
 
     /* 9. Mật độ tăng dần — đo theo obs/GIÂY, không phải obs/segment.
        obs/segment là thước đo sai ở phase cuối: tốc độ 45–50 m/s buộc các hàng
-       phải giãn từ 16m lên 32m (ràng buộc REACT_MARGIN), nên số vật cản trên mỗi
+       phải giãn từ 16m lên 32m (ràng buộc MIN_ROW_GAP_TIME), nên số vật cản trên mỗi
        32m tất yếu giảm dù áp lực thực tế tăng. Cái người chơi cảm nhận là số vật
        cản phải xử lý trong một giây — và ở P3 xe đi nhanh gấp đôi P1. */
     const dens = ['P1', 'P2', 'P3'].map(p => {
