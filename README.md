@@ -155,10 +155,68 @@ hiển thị, nên không thể lệch khỏi quãng đường.
 | Gift | **không** — voucher là vật phẩm riêng |
 | Va chạm | giảm điểm vì mất ~10m |
 
-Chạy sạch không ăn booster = `2,300.00`. Tối đa lý thuyết = `2,458.00`.
+Chạy sạch không ăn booster = `2,299.75`. Tối đa lý thuyết ≈ `2,458`.
 
-Cách tính này khớp luôn với server: `app.ts` xác thực bằng `distance` và không có khái
-niệm điểm, nên điểm hiển thị và giá trị server kiểm là cùng một đại lượng.
+`2,299.75` chứ không phải `2,300` chẵn vì forward-Euler với `dt = 1/60` cho kết quả thấp
+hơn tích phân chính xác một chút. Đây **không** phải lỗi — server dùng đúng phép tính đó,
+nên hai bên khớp nhau. `BASE_DIST = 2300` trong `level_design.js` là giá trị tích phân
+chính xác, chỉ dùng để tính độ dài map cần thiết.
+
+### Điểm tất định — điều kiện để xếp hạng dùng được
+
+Phần thập phân chỉ có nghĩa cho bảng xếp hạng nếu nó **không phụ thuộc máy người chơi**.
+Hai yêu cầu, cả hai đã đạt:
+
+**1. Fixed timestep `1/60s`.** `step()` chỉ được gọi với `dt = FIXED_DT = 1/60`, đúng
+bằng `UNITY_FIXED_DELTA_TIME` trong `app.ts`. Vòng lặp tích luỹ thời gian thực rồi chạy
+step theo bội số, phần dư giữ cho frame sau (accumulator). Vẽ vẫn theo frame rate máy.
+
+Trước đây `step()` nhận `dt` biến thiên từ `requestAnimationFrame`, nên cùng một cách
+chơi cho ra điểm khác nhau:
+
+| Frame rate | Điểm (dt biến thiên) | Điểm (fixed timestep) |
+|---|---|---|
+| 30 fps | 2299.50 | **2299.75** |
+| 60 fps | 2299.75 | **2299.75** |
+| 120 fps | 2299.88 | **2299.75** |
+| 240 fps | 2299.94 | **2299.75** |
+| 60 fps + jitter | thay đổi | **2299.75** |
+
+Chênh lệch cũ 0.13m — lớn hơn khác biệt giữa hai người chơi hơn nhau một frame (0.83m
+thì còn thấy, nhưng 0.13m nhiễu làm phần thập phân vô nghĩa). Giờ chênh lệch là
+**0.000000m** qua mọi frame rate.
+
+**2. Thứ tự tích phân khớp server.** Tính tốc độ tại `G.t` hiện tại, cộng quãng đường,
+*rồi mới* tăng `G.t` — đúng như `app.ts`:
+
+```js
+const v = getBaseSpeedAtTime(timeCursor) * multiplier
+simulatedDistance += v * dt
+timeCursor += dt
+```
+
+Bản trước tăng `G.t` trước rồi mới lấy `speedAt(G.t)`, lệch một frame mỗi bước, dồn lại
+thành **1.33m** sau 60 giây. Sau khi sửa, client khớp `simulatedDistance` của server
+**chính xác 0.000000m**, chứ không chỉ nằm dưới cận trên `allowedMaxDistance`.
+
+### Vì sao mét chứ không phải km
+
+Đơn vị nhỏ nhất có nghĩa là mét: một frame ở 50 m/s đi 0.83m. Với quãng 2300m, ghi km
+cho ra `2.30` — quá thô để phân biệt người chơi, và `.05` sẽ mang nghĩa 50m thay vì 5cm.
+
+Cả hệ thống cũng đã tính bằng mét (`m/s`, segment `32m`, collider `2.49m`), và `app.ts`
+xác thực bằng `distance` theo mét. Hiển thị mét nghĩa là điểm và đại lượng server kiểm là
+cùng một con số, không có phép quy đổi nào để sai.
+
+Thang độ lớn để tham chiếu khi thiết kế bảng xếp hạng:
+
+| Đại lượng | Độ lớn |
+|---|---|
+| Một booster | ~42 m |
+| Một va chạm | ~10 m |
+| Một frame @50 m/s | 0.83 m |
+| Chênh lệch do frame rate | **0 m** |
+| Dung sai anti-cheat (`sim × 1.01`) | 23 m |
 
 ---
 
@@ -206,9 +264,24 @@ tất định. Không seed, không random runtime. Chọn cone/fence/tire theo c
 
 | Phase | Segment | Quãng đường | Thời gian | Nội dung |
 |---|---|---|---|---|
-| P1 Warmup | 8 | 0–256m | 0–10.2s | single, weave, 1 gate |
-| P2 Cruise + Trap | 22 | 256–960m | 10.2–30.2s | gate + weave, oil, **1 booster + 1 gift** |
+| P1 Warmup | 8 | 0–256m | 0–10.2s | chỉ vật cản đơn + nhịp nghỉ, **không gate** |
+| P2 Cruise + Trap | 22 | 256–960m | 10.2–30.2s | gate thưa + weave, oil, **1 booster + 1 gift** |
 | P3 Intense + Peak | 50 | 960–2560m | 30.2–65.2s | chuỗi gate, weave tự giãn, oil, **1 booster** |
+
+Số vật cản mỗi biến thể:
+
+| | A | B | C | Segment trống |
+|---|---|---|---|---|
+| P1 | 7 | 7 | 8 | 2–3 / 8 |
+| P2 | 25 | 26 | 26 | 5 / 22 |
+
+P1 dùng `sg` + `brt`, không dùng `gate` — 10 giây đầu ở 20–30 m/s chỉ để làm quen điều
+khiển. P2 bỏ hết `gsx` và thay bớt `gate` bằng `sg`/`wv`.
+
+Sàn cứng của mật độ là ~6 vật cản cho P1 và ~17 cho P2: `MAX_FREE_STREAK = 5` buộc mỗi
+làn phải bị chặn ít nhất một lần trong mỗi 4 segment, cộng 3 vật cản của đuôi
+`phase-reset`. Muốn thưa hơn nữa thì phải nới `MAX_FREE_STREAK`, nhưng điều đó mở đường
+cho "hành lang an toàn" — người chơi giữ một làn suốt cả đoạn.
 
 Tổng 80 segment = 2560m. Cả 27 tổ hợp đều ra 80 segment.
 
@@ -219,7 +292,7 @@ Tổng 80 segment = 2560m. Cả 27 tổ hợp đều ra 80 segment.
 | Item | Vị trí | Giây | Làn | Context |
 |---|---|---|---|---|
 | Booster | 360m | 13.6s | R | cross |
-| Gift | 616m | 21.2s | L | bait |
+| Gift | 648m | 22.1s | L | bait |
 | Booster | 1352m | 39.7s | R | cross |
 
 Gift đặt ở **giữa P2** (50% của phase) để còn nhiều dư địa quãng đường phía sau.
@@ -240,8 +313,9 @@ itGaunt(kind, lane)       // gauntlet, 3 segment
 itBait(kind, lane, exit)  // bait, 2 segment
 ```
 
-`gsx` **không dùng ở P3** — nó ép dịch đúng 1 làn trong 16m, ở 50 m/s là 0.32s cho một
-việc cần 0.25s.
+`gsx` hiện **không dùng ở đâu cả** — nó ép dịch đúng 1 làn trong 16m, ở 50 m/s là 0.32s
+cho một việc cần 0.25s. Giữ lại trong DSL để dùng nếu cần một nhịp gắt có kiểm soát.
+`gate` cũng không dùng ở P1.
 
 Người thiết kế chỉ viết trật tự khối. **Compiler tự sửa** để không thể ghép lỗi: chèn
 nhịp nghỉ khi chuỗi dày sắp tràn, chặn làn khi làn đó sắp thành hành lang an toàn, pad
@@ -327,8 +401,8 @@ yếu giảm dù áp lực thực tế tăng.
 
 | Phase | obs/giây | obs/segment |
 |---|---|---|
-| P1 | 0.88 – 0.98 | 1.13 – 1.25 |
-| P2 | 1.50 – 1.60 | 1.36 – 1.45 |
+| P1 | 0.69 – 0.78 | 0.88 – 1.00 |
+| P2 | 1.25 – 1.30 | 1.14 – 1.18 |
 | P3 | 1.69 – 1.86 | 1.18 – 1.30 |
 
 **Rule 14** hỏi câu mà rule 6 không hỏi: người chơi có **đi tới được** chỗ đó không.
@@ -460,7 +534,12 @@ nên không thể lách qua vật cản nhanh hơn mức validator dùng để k
 snap về làn gần **đích** nhất, không phải gần vị trí hiện tại.
 
 Bấm tiếp tục sau pause sẽ **đếm ngược 3 giây**; đồng hồ game không chạy trong lúc đếm.
-Đổi biến thể A/B/C thì dựng map mới và về trạng thái chờ, không tự chạy.
+Đếm ngược dùng thời gian thực, không phải fixed timestep. Đổi biến thể A/B/C thì dựng map
+mới và về trạng thái chờ, không tự chạy.
+
+Vòng lặp chạy `step()` với `dt` cố định `1/60` (xem *Điểm tất định*), tối đa 5 bước mỗi
+frame để không treo khi tab bị ngủ. Quá 5 bước thì bỏ phần nợ thời gian thay vì dồn tích —
+tab ngủ 30 giây không làm xe nhảy 30 giây quãng đường.
 
 Trên mobile, bấm Play thì khung game ghim toàn màn hình và trang bị khóa cuộn.
 
@@ -501,11 +580,11 @@ Map hợp lệ không có nghĩa là dễ chịu. Ba số này quyết định c
 | Số đo | Ý nghĩa | Hiện tại |
 |---|---|---|
 | Slack tối thiểu | thời gian dư sau khi đã đổi làn xong | **0.118s** (7 frame @60fps) |
-| Tỉ lệ hàng 16m | hàng chỉ cách hàng trước 16m | **36%** |
-| Hàng chỉ 1 làn mở | không có lựa chọn, buộc vào đúng một chỗ | **34%** |
+| Tỉ lệ hàng 16m | hàng chỉ cách hàng trước 16m | **32%** |
+| Hàng chỉ 1 làn mở | không có lựa chọn, buộc vào đúng một chỗ | **30%** |
 
-Phân bố khoảng cách giữa các hàng (A-A-A): 16m × 24 · 32m × 32 · 48m × 7 · 64m × 10 ·
-80m × 1.
+Phân bố khoảng cách giữa các hàng (A-A-A): 16m × 19 · 32m × 31 · 48m × 8 · 64m × 11 ·
+80m × 1. Tổng 71 hàng có vật cản.
 
 Nếu map trở nên khó di chuyển, ba đòn hiệu quả nhất theo thứ tự:
 

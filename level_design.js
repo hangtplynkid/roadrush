@@ -383,11 +383,16 @@
   /* Beats do designer viết: mảng các khối. Compile sẽ chèn nghỉ / phá hành lang. */
   const PHASE_SPEC = [
     {
+      /* P1 là đoạn làm quen: dùng chủ yếu vật cản ĐƠN và nhịp nghỉ, không gate.
+         Trước đây P1 có 9–10 vật cản trên 8 segment (1.13–1.25 obs/seg) — quá dày
+         cho 10 giây đầu ở tốc độ 20–30 m/s. Giờ dùng sg + brt để hạ xuống ~7.
+         Sàn cứng là ~6: MAX_FREE_STREAK = 5 buộc mỗi làn phải bị chặn ít nhất một
+         lần trong mỗi 4 segment, cộng 3 vật cản của đuôi phase-reset. */
       key: 'P1', label: 'Warmup', len: 8,
       beats: {
-        A: [brt(), sg(1, 1), wv(0, 2), sg(2, 1), wv(1, 0)],
-        B: [wv(2, 0), sg(1, 1), sg(0, 2), wv(1, 2)],
-        C: [sg(0, 1), gt(1), sg(2, 2), wv(0, 1)]
+        A: [brt(), sg(1, 1), sg(0, 2), brt(), sg(2, 1)],
+        B: [sg(2, 1), brt(), sg(1, 2), brt()],
+        C: [sg(0, 1), brt(), sg(2, 2), sg(1, 1)]
       }
     },
     {
@@ -398,18 +403,24 @@
          Booster đặt đầu phase, GIFT đặt ĐÚNG GIỮA phase:
          giữa P2 theo thời gian là giây 20 ⇒ distAtTime(20)=575m ⇒ segment 18,
          tức P2-index 10. Các khối trước gift được xếp để cộng lại đúng 10 segment. */
+      /* P2 giảm mật độ: bỏ hết gsx (ép dịch đúng 1 làn trong 16m — nhịp gắt nhất),
+         thay bớt gt (2 vật cản/hàng) bằng sg/wv (1 vật cản/hàng) và chèn brt.
+         Trước: 30–32 obs / 22 segment = 1.50–1.60 obs/s. Mục tiêu ~1.15–1.30.
+         Vẫn phải > P1 và < P3 (rule 9), P3 hiện 1.69–1.86 obs/s. */
       key: 'P2', label: 'Cruise + Trap', len: 22,
       beats: {
-        //   1        1          3 (idx 2,3,4)      1       1        1      2 (idx 8,9)
-        A: [gt(1), wv(0, 2), itCross('booster', 0), gt(2), wv(2, 1), gsx(1), oil(1),
-            itBait('gift', 0, 1),                            // idx 10,11 ← giữa P2
-            gt(1), wv(0, 2), gt(2), oil(0)],
-        B: [wv(1, 0), gt(2), itGaunt('booster', 2), wv(2, 1), gt(1), gsx(2), oil(2),
+        //   1        1          3 (idx 2,3,4)      1       1        2 (idx 7,8)
+        A: [gt(1), wv(0, 2), itCross('booster', 0), sg(2, 1), wv(2, 1), oil(1),
+            itBait('gift', 0, 1),                            // ← giữa P2
+            brt(), gt(1), sg(0, 2), oil(0)],
+        /* itGaunt chiếm 3 segment nhưng item nằm ở segment GIỮA, nên booster của B
+           ở sớm hơn A. Cần thêm một khối trước gift để giữ khoảng cách ≥ 250m. */
+        B: [wv(1, 0), sg(2, 1), itGaunt('booster', 2), wv(2, 1), gt(1), sg(0, 2), oil(2),
             itBait('gift', 2, 1),
-            gt(0), wv(1, 2), gt(1), oil(1), gt(2)],
-        C: [gt(2), wv(1, 0), itBait('booster', 0, 1), gsx(1), wv(1, 2), gt(1), gsx(0), oil(0),
+            brt(), sg(0, 1), wv(1, 2), gt(1), oil(1)],
+        C: [gt(2), wv(1, 0), itBait('booster', 0, 1), sg(1, 1), wv(1, 2), oil(0),
             itBait('gift', 2, 1),
-            gt(1), wv(2, 0), gt(0), oil(2)]
+            brt(), gt(1), sg(2, 2), wv(2, 0), oil(2)]
       }
     },
     {
