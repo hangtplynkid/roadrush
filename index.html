@@ -50,6 +50,9 @@ td b{font-family:'Fredoka',sans-serif;font-size:12px;color:#3D3266}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10px;color:#6B6390;margin-top:5px}
 .legend span{display:flex;align-items:center;gap:4px}
 .sw{width:10px;height:8px;border-radius:2px;display:inline-block}
+/* Legend dùng chính sprite của game, để nhìn bảng là nhận ra vật trong lúc chơi.
+   object-fit:contain giữ tỉ lệ gốc nên cone không bị bóp thành vuông. */
+.swi{width:14px;height:14px;object-fit:contain;display:inline-block;flex:none}
 /* Canvas co lại trên màn nhỏ. Phải có aspect-ratio + height:auto, nếu chỉ đặt
    width thì browser vẫn dùng attribute height=780 làm CSS height nên xe bị méo.
    touch-action:none để kéo trên canvas không bị browser hiểu là cuộn trang. */
@@ -267,12 +270,12 @@ tbody tr:hover{background:rgba(139,123,216,.06)}
   <div class="panel">
     <div class="mapscroll"><svg id="mapSvg" height="176"></svg></div>
     <div class="legend">
-      <span><i class="sw" style="background:#E8A06B"></i>Cone</span>
-      <span><i class="sw" style="background:#A66B4A"></i>Fence</span>
-      <span><i class="sw" style="background:#5B8FCC"></i>Tire</span>
-      <span><i class="sw" style="background:#6D5BA6;width:16px"></i>Oil</span>
-      <span><i class="sw" style="background:#8B9EFF;border-radius:50%;width:10px;height:10px"></i>Booster</span>
-      <span><i class="sw" style="background:#E8A0C8;border-radius:50%;width:10px;height:10px"></i>Gift</span>
+      <span><img class="swi" src="img/cone.png" alt="">Cone</span>
+      <span><img class="swi" src="img/fence.png" alt="">Fence</span>
+      <span><img class="swi" src="img/tire.png" alt="">Tire</span>
+      <span><img class="swi" src="img/oil.png" alt="">Oil</span>
+      <span><img class="swi" src="img/booster.png" alt="">Booster</span>
+      <span><img class="swi" src="img/giftbox.png" alt="">Gift</span>
       <span style="color:#bbb">|</span>
       <span style="font-size:9px;color:#8C85AC">1 ô = segment 32m · 2 hàng (y −8 / +8) · cách nhau 16m</span>
     </div>
@@ -491,6 +494,17 @@ const {
   buildMap, rowsOf, validate, lintLibrary, testAllCombos
 } = LD;
 
+/* ================= SPRITE (dùng chung UI + game) =================
+   Một bảng tên file duy nhất cho cả sơ đồ SVG, legend và canvas chơi thử, để
+   không có chỗ nào hiện hình khác chỗ khác.
+   SPRITE_AR là tỉ lệ w/h của file, chỉ dùng cho sơ đồ (vẽ theo bề cao cố định
+   nên cần tỉ lệ để không méo). Trong game thì kích thước lấy từ collider, không
+   lấy từ đây. */
+const SPRITE_FILE={cone:'cone.png',tire:'tire.png',fence:'fence.png',oil:'oil.png',
+ booster:'booster.png',gift:'giftbox.png',car:'car.png'};
+const SPRITE_AR={'cone.png':190/241,'tire.png':330/257,'fence.png':351/264,
+ 'oil.png':328/233,'booster.png':339/341,'giftbox.png':318/318,'car.png':484/610};
+
 /* ================= STATE ================= */
 let SEL={P1:'A',P2:'A',P3:'A'}, MAP=null;
 
@@ -675,7 +689,16 @@ function renderMap(){
   if(s.idx>0)svg.appendChild(E('line',{x1:x0,y1:laneY(0)-2,x2:x0,y2:laneY(2)+LH+2,stroke:'#E4DFF5','stroke-width':.5,'stroke-dasharray':'2,2'}));
   for(const o of s.obstacles){
    const ox=x0+(o.row===1?SW*0.27:SW*0.73), oy=laneY(o.lane)+LH/2;
-   if(o.t==='oil')svg.appendChild(E('ellipse',{cx:ox,cy:oy,rx:7,ry:4.5,fill:col.oil,opacity:.85}));
+   /* Dùng chính sprite của game để đọc sơ đồ là nhận ra vật sẽ gặp lúc chơi.
+      o.id luôn là khoá sprite ('cone'/'oil'/'booster'/'gift'...) kể cả khi
+      o.t là 'normal'. Ô sơ đồ chỉ cao ~11px nên vẽ theo bề cao cố định và giữ
+      tỉ lệ gốc — đây là sơ đồ, không phải hitbox. */
+   const f=SPRITE_FILE[o.id];
+   if(f){
+    const ih=o.id==='oil'?10:14, iw=ih*SPRITE_AR[f];
+    svg.appendChild(E('image',{href:'img/'+f,x:ox-iw/2,y:oy-ih/2,width:iw,height:ih}));
+   }
+   else if(o.t==='oil')svg.appendChild(E('ellipse',{cx:ox,cy:oy,rx:7,ry:4.5,fill:col.oil,opacity:.85}));
    else if(o.t==='booster'){
     svg.appendChild(E('circle',{cx:ox,cy:oy,r:7.5,fill:'#8B9EFF'}));
     const t=E('text',{x:ox,y:oy+3.5,'font-size':8,'text-anchor':'middle',fill:'#fff'});t.textContent='⚡';svg.appendChild(t);
@@ -707,6 +730,66 @@ function renderChecks(v){
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const CW=390,CH=780,PS=CW/ROAD_W,CARY=CH*0.80;
 let G=null,raf=null,last=0;
+
+/* ================= SPRITE =================
+   Ảnh trong img/ được vẽ ở ĐÚNG kích thước collider, không phải kích thước file,
+   nên hình luôn trùng vùng va chạm mà validator dùng để kiểm map. Không có sprite
+   nào trông to hơn hitbox của nó.
+
+   Obstacle png tình cờ đúng 100 px/m (cone 190×241 = 1.9×2.41m, fence 351×264 =
+   3.51×2.64m, tire 330×257, oil 328×233) nên vẽ đúng collider là 1:1, không méo.
+   car.png 484×610 có bánh xe chìa ra hai bên; vẽ vào hộp 2.49×3.965 thì mép bánh
+   trùng đúng bề rộng hitbox, chỉ dài ra ~26% so với tỉ lệ file — đổi lấy việc
+   "thấy sao thì đụng vậy", quan trọng hơn với game mà cả thiết kế map dựa trên
+   hình học collider.
+
+   Thiếu file hoặc chưa tải xong thì draw() tự quay về vẽ khối màu như trước, nên
+   mở index.html bằng file:// mà không có thư mục img vẫn chạy được. */
+const SPR={};
+/* tên file lấy từ SPRITE_FILE (khai báo ở đầu script, dùng chung với sơ đồ SVG
+   và legend) cộng thêm hai ảnh chỉ game cần */
+const SPRITE_SRC={...SPRITE_FILE,bg:'bg.png',start:'start_bg.png'};
+for(const [k,f] of Object.entries(SPRITE_SRC)){
+ const im=new Image();
+ im.onload=()=>{SPR[k]=im};
+ im.onerror=()=>{console.warn('không tải được img/'+f+' — dùng hình vẽ thay thế')};
+ im.src='img/'+f;
+}
+/* complete && naturalWidth: ảnh lỗi vẫn có thể complete=true, phải kiểm cả hai */
+const hasSpr=k=>!!SPR[k]&&SPR[k].complete&&SPR[k].naturalWidth>0;
+
+/* Số đo đọc trực tiếp từ bg.png (1600px ứng 16m ⇒ 100 px/m):
+     cỏ 0–73 · vạch biên trắng 75–89 · lề 91–151 · nhựa 152–1447 · vạch tâm 784–815
+   Nhựa trải từ x −6.48m tới +6.47m, vừa khớp CAR_LIMIT_X ±5.25 cộng nửa bề rộng xe
+   1.245 — ảnh được vẽ cho đúng con đường 16m này.
+   Ảnh có sẵn MỘT vạch tâm (đường 2 làn) nên phải phủ lại bằng màu nhựa, rồi vẽ 2
+   vạch làn của game lên trên. Nhựa là màu phẳng tuyệt đối (đã kiểm: 0 biến thiên
+   theo cột) nên phủ không để lại vết. */
+const ROAD_ASPHALT='#685B88',ROAD_STRIPE='#8E82A6';
+const BG_STRIPE_X0=784/1600*ROAD_W,BG_STRIPE_X1=816/1600*ROAD_W;
+/* nhịp vạch lấy luôn từ ảnh (dash 271px, gap 87px) để 2 vạch làn vẽ thêm không lệch style */
+const STRIPE_W=0.32,STRIPE_DASH=2.71,STRIPE_GAP=0.87;
+/* Dải vạch xuất phát kẻ ô trong start_bg.png: y ảnh 1709–1954 trên 3200px.
+   y ảnh tính từ trên xuống, mét thế giới tính từ dưới lên ⇒ phải lật. */
+const START_BAND_M=[(1-1954/3200)*SEG_H,(1-1709/3200)*SEG_H];
+
+/* Xe phủ màu trạng thái: dựng trên canvas phụ để source-atop chỉ ăn vào pixel của
+   xe. Cache theo màu + kích thước nên mỗi trạng thái chỉ vẽ lại một lần. */
+const carTintCache=new Map();
+function tintedCar(color,w,h){
+ const key=color+'|'+Math.round(w)+'x'+Math.round(h);
+ let c=carTintCache.get(key);
+ if(!c){
+  c=document.createElement('canvas');
+  c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));
+  const g=c.getContext('2d');
+  g.drawImage(SPR.car,0,0,c.width,c.height);
+  g.globalCompositeOperation='source-atop';
+  g.fillStyle=color;g.fillRect(0,0,c.width,c.height);
+  carTintCache.set(key,c);
+ }
+ return c;
+}
 
 /* ===== TRẠNG THÁI PHIÊN CHƠI =====
    idle      · đã dựng map, chờ bấm Play
@@ -1037,14 +1120,57 @@ function step(dt){
   });
  }
 }
+/* Đường: bg.png lát dọc theo G.dist. Ảnh cao 3200px ứng đúng 32m (1 segment) và
+   canvas cao 780px ứng 780/PS mét, nên lát 2 tấm là luôn phủ kín màn hình.
+   Vẽ theo mét rồi mới nhân PS, không đổi hệ toạ độ nào — cuộn khớp tuyệt đối với
+   vật cản vì cùng dùng G.dist. */
+/* mét thế giới ⇄ y canvas — cùng phép biến đổi mà vật cản dùng, nên nền không thể
+   cuộn lệch so với vật cản */
+const yOf=m=>CARY-(m-G.dist)*PS;
+
+function drawRoad(){
+ if(!hasSpr('bg')){
+  ctx.fillStyle='#E6E0F8';ctx.fillRect(0,0,CW,CH);
+ } else {
+  /* Tấm bg.png cao 3200px = đúng 32m = 1 segment, rộng 1600px = đúng 16m đường.
+     Lát các tấm phủ từ mép dưới tới mép trên canvas. */
+  const tileH=SEG_H*PS;
+  const mTop=G.dist+CARY/PS;                     // mét tại y=0
+  const mBot=G.dist-(CH-CARY)/PS;                // mét tại y=CH
+  for(let i=Math.floor(mBot/SEG_H);i<=Math.floor(mTop/SEG_H);i++){
+   const yTop=yOf((i+1)*SEG_H);                  // mép trên tấm
+   /* +1px chiều cao: bù làm tròn subpixel, không để hở kẻ ngang giữa hai tấm */
+   ctx.drawImage((i===0&&hasSpr('start'))?SPR.start:SPR.bg,0,yTop,CW,tileH+1);
+   /* Ảnh vẽ cho đường 2 làn nên có MỘT vạch tâm. Game 3 làn cần vạch ở chỗ khác,
+      nên phủ vạch tâm bằng màu nhựa (nhựa là màu phẳng, phủ không để lại vết).
+      Riêng tấm số 0 chừa dải vạch xuất phát kẻ ô ra, đó là chi tiết muốn giữ. */
+   const x0=BG_STRIPE_X0*PS,w0=(BG_STRIPE_X1-BG_STRIPE_X0)*PS;
+   ctx.fillStyle=ROAD_ASPHALT;
+   if(i===0&&hasSpr('start')){
+    const bandTop=yOf(START_BAND_M[1]),bandBot=yOf(START_BAND_M[0]);
+    ctx.fillRect(x0,yTop,w0,Math.max(0,bandTop-yTop));
+    ctx.fillRect(x0,bandBot,w0,Math.max(0,yTop+tileH-bandBot));
+   } else {
+    ctx.fillRect(x0,yTop,w0,tileH+1);
+   }
+  }
+ }
+ /* 2 vạch phân làn của game, cùng nhịp dash/gap với ảnh cho khớp style */
+ ctx.fillStyle=hasSpr('bg')?ROAD_STRIPE:'rgba(255,255,255,.65)';
+ const per=STRIPE_DASH+STRIPE_GAP,hPx=STRIPE_DASH*PS,w=STRIPE_W*PS;
+ const mTop=G.dist+CARY/PS;
+ for(let l=0;l<2;l++){
+  const lx=(LANE_XS[l]+LANE_W/2+ROAD_W/2)*PS;
+  for(let m=Math.ceil(mTop/per)*per;yOf(m)<=CH;m-=per){
+   const yTop=yOf(m);
+   if(yTop+hPx>=0)ctx.fillRect(lx-w/2,yTop,w,hPx);
+  }
+ }
+}
+
 function draw(){
  ctx.clearRect(0,0,CW,CH);
- ctx.fillStyle='#E6E0F8';ctx.fillRect(0,0,CW,CH);
- ctx.strokeStyle='rgba(255,255,255,.65)';ctx.lineWidth=2;ctx.setLineDash([22,18]);
- ctx.lineDashOffset=-(G.dist*PS)%40;
- for(let l=0;l<2;l++){const lx=(LANE_XS[l]+LANE_W/2+ROAD_W/2)*PS;
-  ctx.beginPath();ctx.moveTo(lx,0);ctx.lineTo(lx,CH);ctx.stroke()}
- ctx.setLineDash([]);
+ drawRoad();
 
  const col={oil:'rgba(109,91,166,.85)',fence:'#A66B4A',cone:'#E8A06B',tire:'#5B8FCC'};
  for(const o of G.ent){
@@ -1052,19 +1178,35 @@ function draw(){
   const sy=CARY-(o.y-G.dist)*PS;
   if(sy<-40||sy>CH+40)continue;
   const sx=(o.x+ROAD_W/2)*PS;
-  if(o.t==='booster'){
-   ctx.shadowColor='#8B9EFF';ctx.shadowBlur=14;ctx.fillStyle='#8B9EFF';
-   ctx.beginPath();ctx.arc(sx,sy,18,0,7);ctx.fill();ctx.shadowBlur=0;
-   ctx.fillStyle='#fff';ctx.font='700 18px Fredoka';ctx.textAlign='center';ctx.fillText('⚡',sx,sy+6);
-  } else if(o.t==='gift'){
-   ctx.shadowColor='#E8A0C8';ctx.shadowBlur=12;ctx.fillStyle='#E8A0C8';
-   ctx.beginPath();ctx.roundRect(sx-18,sy-18,36,36,7);ctx.fill();ctx.shadowBlur=0;
-   ctx.fillStyle='#fff';ctx.fillRect(sx-2.5,sy-18,5,36);ctx.fillRect(sx-18,sy-2.5,36,5);
+  /* Item: vẽ đúng hộp ITEM_W×ITEM_H, thêm nhịp phập phồng nhẹ để nổi trên nền */
+  if(o.t==='booster'||o.t==='gift'){
+   const iw=ITEM_W*PS,ih=ITEM_H*PS;
+   const key=o.t==='booster'?'booster':'gift';
+   if(hasSpr(key)){
+    const k=1+0.06*Math.sin(G.t*5+o.y);          // ±6%, chỉ để mắt bắt được item
+    ctx.save();
+    ctx.shadowColor=o.t==='booster'?'rgba(139,158,255,.85)':'rgba(232,160,200,.85)';
+    ctx.shadowBlur=16;
+    ctx.drawImage(SPR[key],sx-iw*k/2,sy-ih*k/2,iw*k,ih*k);
+    ctx.restore();
+   } else if(o.t==='booster'){
+    ctx.shadowColor='#8B9EFF';ctx.shadowBlur=14;ctx.fillStyle='#8B9EFF';
+    ctx.beginPath();ctx.arc(sx,sy,18,0,7);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle='#fff';ctx.font='700 18px Fredoka';ctx.textAlign='center';ctx.fillText('⚡',sx,sy+6);
+   } else {
+    ctx.shadowColor='#E8A0C8';ctx.shadowBlur=12;ctx.fillStyle='#E8A0C8';
+    ctx.beginPath();ctx.roundRect(sx-18,sy-18,36,36,7);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle='#fff';ctx.fillRect(sx-2.5,sy-18,5,36);ctx.fillRect(sx-18,sy-2.5,36,5);
+   }
   } else {
    const c=OBS_MAP[o.id],w=c.w*PS,h=c.h*PS;
-   ctx.fillStyle=col[o.id];
-   if(o.id==='oil'){ctx.beginPath();ctx.ellipse(sx,sy,w/2,h/2,0,0,7);ctx.fill()}
-   else{ctx.beginPath();ctx.roundRect(sx-w/2,sy-h/2,w,h,4);ctx.fill()}
+   if(hasSpr(o.id)){
+    ctx.drawImage(SPR[o.id],sx-w/2,sy-h/2,w,h);
+   } else {
+    ctx.fillStyle=col[o.id];
+    if(o.id==='oil'){ctx.beginPath();ctx.ellipse(sx,sy,w/2,h/2,0,0,7);ctx.fill()}
+    else{ctx.beginPath();ctx.roundRect(sx-w/2,sy-h/2,w,h,4);ctx.fill()}
+   }
   }
  }
  /* khi đang kéo: vạch mờ chỉ đích ngón tay, thấy rõ xe đang bị giới hạn tốc độ ngang */
@@ -1079,10 +1221,28 @@ function draw(){
 
  const cx=(G.x+ROAD_W/2)*PS,cw=CAR_W*PS,ch=CAR_H*PS;
  ctx.globalAlpha=G.state==='collided'&&Math.floor(G.t*10)%2?.45:1;
- ctx.fillStyle=G.state==='slipping'?'#C4A484':G.boost>0?'#6B7FE8':G.state==='collided'?'#CC5555':'#8B7BD8';
- ctx.beginPath();ctx.roundRect(cx-cw/2,CARY-ch/2,cw,ch,9);ctx.fill();
- ctx.fillStyle='rgba(255,255,255,.75)';
- ctx.beginPath();ctx.roundRect(cx-cw/4,CARY-ch/3.2,cw/2,ch/4,4);ctx.fill();
+ if(hasSpr('car')){
+  /* Xe sprite vẽ vừa hộp collider CAR_W×CAR_H. Trạng thái vẫn phải đọc được ngay
+     nên giữ tín hiệu của bản cũ, chỉ đổi cách thể hiện:
+       slipping → nghiêng theo hướng trượt + phủ nâu
+       collided → phủ đỏ (kèm nháy alpha như cũ)
+       boost    → quầng sáng xanh
+     Phủ màu làm trên canvas phụ rồi mới dán sang: source-atop trên ctx chính sẽ ăn
+     vào cả nền đã vẽ, không chỉ pixel xe. */
+  ctx.save();
+  ctx.translate(cx,CARY);
+  if(G.state==='slipping')ctx.rotate(G.slipDir*0.22);
+  if(G.boost>0){ctx.shadowColor='rgba(139,158,255,.95)';ctx.shadowBlur=20}
+  const tint=G.state==='collided'?'rgba(204,85,85,.55)'
+   :G.state==='slipping'?'rgba(196,164,132,.5)':null;
+  ctx.drawImage(tint?tintedCar(tint,cw,ch):SPR.car,-cw/2,-ch/2,cw,ch);
+  ctx.restore();
+ } else {
+  ctx.fillStyle=G.state==='slipping'?'#C4A484':G.boost>0?'#6B7FE8':G.state==='collided'?'#CC5555':'#8B7BD8';
+  ctx.beginPath();ctx.roundRect(cx-cw/2,CARY-ch/2,cw,ch,9);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.75)';
+  ctx.beginPath();ctx.roundRect(cx-cw/4,CARY-ch/3.2,cw/2,ch/4,4);ctx.fill();
+ }
  ctx.globalAlpha=1;
  ctx.textAlign='center';ctx.font='600 13px Be Vietnam Pro';
  G.pops.forEach((p,i)=>{ctx.globalAlpha=Math.min(1,p.life);ctx.fillStyle=p.c;
